@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — ApexBlog Platform</title>
+  <meta name="description" content="Administrative control center for ApexBlog platform.">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+  <!-- Sticky Navbar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="brand">
+        <div class="brand-icon">⚡</div>
+        <div>Apex<span>Admin</span></div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="/" class="nav-link">← View Public Site</a></li>
+        <li><a href="/admin" class="nav-link active">Control Center</a></li>
+      </ul>
+
+      <div class="nav-actions" id="nav-actions">
+        <button class="theme-toggle" title="Toggle Theme">☀️</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content container">
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <div class="admin-title-row">
+        <h1>Platform Control Center</h1>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+          Manage blogs, moderate comments, oversee registered readers, and monitor system metrics.
+        </p>
+      </div>
+      <button id="btn-create-blog-top" class="btn btn-primary">
+        <span>+</span> Create New Article
+      </button>
+    </div>
+
+    <!-- Admin Navigation Tabs -->
+    <nav class="admin-tabs" aria-label="Admin sections">
+      <button class="admin-tab-btn active" data-tab="overview">📊 Overview</button>
+      <button class="admin-tab-btn" data-tab="blogs">📝 Articles Management</button>
+      <button class="admin-tab-btn" data-tab="users">👥 Reader Accounts</button>
+      <button class="admin-tab-btn" data-tab="moderation">🛡️ Comment Moderation</button>
+      <button class="admin-tab-btn" data-tab="settings">⚙️ Settings</button>
+    </nav>
+
+    <!-- Tab 1: Overview Dashboard -->
+    <section id="tab-overview" class="admin-tab-content">
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">Total Articles</span>
+          <span class="stat-value" id="stat-total-blogs">-</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Published</span>
+          <span class="stat-value" id="stat-published-blogs" style="color: var(--success);">-</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Drafts</span>
+          <span class="stat-value" id="stat-draft-blogs" style="color: var(--warning);">-</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Registered Readers</span>
+          <span class="stat-value" id="stat-total-readers">-</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Total Comments</span>
+          <span class="stat-value" id="stat-total-comments">-</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Total Likes</span>
+          <span class="stat-value" id="stat-total-likes" style="color: #f43f5e;">-</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem;">
+        <div class="filter-bar">
+          <h3 style="margin-bottom: 1rem;">Recent Articles</h3>
+          <div id="overview-recent-blogs">Loading...</div>
+        </div>
+        <div class="filter-bar">
+          <h3 style="margin-bottom: 1rem;">Recent Community Activity</h3>
+          <div id="overview-recent-comments">Loading...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 2: Articles Management -->
+    <section id="tab-blogs" class="admin-tab-content" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div style="font-size: 1.15rem; font-weight: 600;">All Platform Articles</div>
+        <button id="btn-create-blog" class="btn btn-primary btn-sm">+ New Article</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Categories</th>
+              <th>Engagement</th>
+              <th>Date</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="blogs-table-body">
+            <tr><td colspan="6" style="text-align: center;">Loading articles...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tab 3: Reader Accounts -->
+    <section id="tab-users" class="admin-tab-content" style="display: none;">
+      <div style="margin-bottom: 1.5rem; font-size: 1.15rem; font-weight: 600;">Registered User Accounts</div>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>User Name</th>
+              <th>Email Address</th>
+              <th>Role</th>
+              <th>Comments Posted</th>
+              <th>Likes Given</th>
+              <th>Member Since</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            <tr><td colspan="7" style="text-align: center;">Loading user accounts...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tab 4: Comment Moderation -->
+    <section id="tab-moderation" class="admin-tab-content" style="display: none;">
+      <div style="margin-bottom: 1.5rem; font-size: 1.15rem; font-weight: 600;">Cross-Platform Comment Moderation</div>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Commenter</th>
+              <th>Comment Content</th>
+              <th>Article</th>
+              <th>Timestamp</th>
+              <th style="text-align: right;">Moderate</th>
+            </tr>
+          </thead>
+          <tbody id="moderation-table-body">
+            <tr><td colspan="5" style="text-align: center;">Loading comments...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tab 5: Settings -->
+    <section id="tab-settings" class="admin-tab-content" style="display: none; max-width: 600px;">
+      <div class="filter-bar">
+        <h3 style="margin-bottom: 1.25rem;">Administrator Account Credentials</h3>
+        <form id="admin-profile-form">
+          <div class="form-group">
+            <label class="form-label" for="admin-name">Admin Name</label>
+            <input type="text" id="admin-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="admin-email">Admin Email</label>
+            <input type="email" id="admin-email" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="admin-current-password">Current Password (Required for changes)</label>
+            <input type="password" id="admin-current-password" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="admin-new-password">New Password (Leave blank to keep existing)</label>
+            <input type="password" id="admin-new-password" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Create / Edit Blog Modal -->
+  <div class="modal-backdrop" id="blog-modal">
+    <div class="modal-box" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="blog-modal-title">Create New Article</h3>
+        <button class="modal-close" onclick="closeBlogModal()">×</button>
+      </div>
+      <form id="blog-form">
+        <div class="modal-body">
+          <input type="hidden" id="blog-edit-id" value="">
+
+          <div class="form-group">
+            <label class="form-label" for="blog-title-input">Article Title *</label>
+            <input type="text" id="blog-title-input" class="form-control" placeholder="e.g., Designing Scalable Micro-Services" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Cover Image (Upload from Device)</label>
+            <div class="image-upload-box" id="cover-upload-box">
+              <input type="file" id="cover-file-input" accept="image/*" style="display: none;">
+              <div id="upload-prompt-text">
+                📁 Click or drop an image file here to upload (PNG, JPG, WEBP, max 5MB)
+              </div>
+              <img id="cover-preview-img" class="upload-preview" alt="Cover Preview">
+              <input type="hidden" id="blog-cover-url" value="">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Assigned Categories (Select all that apply) *</label>
+            <div class="category-checkboxes" id="blog-category-checks">
+              <!-- Dynamically populated categories checkboxes -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="blog-tags-input">Tags (Comma-separated)</label>
+            <input type="text" id="blog-tags-input" class="form-control" placeholder="e.g., nodejs, architecture, security">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Body Content (HTML & Rich Text Formatted) *</label>
+            <div class="editor-toolbar">
+              <button type="button" class="toolbar-btn" onclick="formatDoc('bold')" title="Bold"><strong>B</strong></button>
+              <button type="button" class="toolbar-btn" onclick="formatDoc('italic')" title="Italic"><em>I</em></button>
+              <button type="button" class="toolbar-btn" onclick="insertTag('<h2>', '</h2>')" title="Heading 2">H2</button>
+              <button type="button" class="toolbar-btn" onclick="insertTag('<h3>', '</h3>')" title="Heading 3">H3</button>
+              <button type="button" class="toolbar-btn" onclick="insertTag('<blockquote>', '</blockquote>')" title="Blockquote">“”</button>
+              <button type="button" class="toolbar-btn" onclick="insertTag('<code>', '</code>')" title="Inline Code">&lt;/&gt;</button>
+              <button type="button" class="toolbar-btn" onclick="insertTag('<p>', '</p>')" title="Paragraph">&para;</button>
+            </div>
+            <textarea id="blog-body-input" class="form-control editor-textarea" placeholder="Write article content in rich HTML format..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Publication Status</label>
+            <div style="display: flex; gap: 1.5rem; align-items: center;">
+              <label class="category-check-item">
+                <input type="radio" name="blog-status" value="draft" id="status-draft" checked>
+                <span>Draft (Hidden from Public)</span>
+              </label>
+              <label class="category-check-item">
+                <input type="radio" name="blog-status" value="published" id="status-published">
+                <span>Published (Visible to All Readers)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeBlogModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="btn-save-blog">Save Article</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Blog Confirmation Modal -->
+  <div class="modal-backdrop" id="delete-blog-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--danger-light);">Permanently Delete Article?</h3>
+        <button class="modal-close" onclick="closeDeleteBlogModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="delete-blog-title-text" style="color: var(--text-primary); margin-bottom: 1rem;"></p>
+        <p style="font-size: 0.875rem; color: var(--danger-light); background: var(--danger-bg); padding: 0.75rem; border-radius: var(--radius-sm);">
+          ⚠️ <strong>Strict Cascade Deletion:</strong> Deleting this article will permanently erase the article, all its comments, all nested replies, and all likes. This action cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="closeDeleteBlogModal()">Cancel</button>
+        <button id="btn-confirm-delete-blog" class="btn btn-danger btn-sm">Permanently Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

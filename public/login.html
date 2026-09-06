@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — ApexBlog Platform</title>
+  <meta name="description" content="Sign in to your ApexBlog account.">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body style="display: flex; flex-direction: column; justify-content: center; min-height: 100vh;">
+
+  <!-- Navbar Simple -->
+  <header class="navbar" style="position: absolute; top: 0; width: 100%;">
+    <div class="container nav-container">
+      <a href="/" class="brand">
+        <div class="brand-icon">⚡</div>
+        <div>Apex<span>Blog</span></div>
+      </a>
+      <div class="nav-actions">
+        <button class="theme-toggle" title="Toggle Theme">☀️</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="max-width: 460px; margin: auto; padding: 6rem 1.5rem 2rem;">
+    <div class="filter-bar" style="padding: 2.25rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="font-size: 1.85rem; margin-bottom: 0.5rem;">Welcome Back</h1>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+          Sign in to like, comment, and engage with technical blogs.
+        </p>
+      </div>
+
+      <!-- Demo Quick Fill Buttons -->
+      <div style="margin-bottom: 1.75rem; padding: 1rem; background: var(--bg-surface-elevated); border-radius: var(--radius-md); border: 1px dashed var(--border-strong);">
+        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em;">
+          Demo Quick Logins
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-admin" style="flex: 1;">
+            🔑 Login as Admin
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-reader" style="flex: 1;">
+            📖 Login as Reader
+          </button>
+        </div>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address</label>
+          <input type="email" id="login-email" class="form-control" placeholder="name@example.com" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btn-submit-login" style="width: 100%; margin-top: 0.5rem;">
+          Sign In
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 1.75rem; font-size: 0.9rem; color: var(--text-secondary);">
+        Don't have an account yet? 
+        <a href="/register" style="font-weight: 600; color: var(--accent-light);">Create a free account</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Demo pre-fill buttons
+      document.getElementById('btn-fill-admin')?.addEventListener('click', () => {
+        document.getElementById('login-email').value = 'admin@blog.com';
+        document.getElementById('login-password').value = 'Admin@123456';
+      });
+
+      document.getElementById('btn-fill-reader')?.addEventListener('click', () => {
+        document.getElementById('login-email').value = 'john@reader.com';
+        document.getElementById('login-password').value = 'Reader@123';
+      });
+
+      // Login submission
+      document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const btn = document.getElementById('btn-submit-login');
+
+        try {
+          btn.disabled = true;
+          btn.textContent = 'Signing in...';
+
+          const res = await API.request('/api/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password })
+          });
+
+          API.setToken(res.token);
+          API.setUser(res.user);
+
+          showToast('Welcome back! Login successful.');
+
+          setTimeout(() => {
+            if (res.user.role === 'admin') {
+              window.location.href = '/admin';
+            } else {
+              window.location.href = '/';
+            }
+          }, 400);
+
+        } catch (err) {
+          showToast(err.message || 'Invalid email or password.', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

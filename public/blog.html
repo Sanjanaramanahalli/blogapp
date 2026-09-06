@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Article - ApexBlog Platform</title>
+  <meta name="description" content="Read full article on ApexBlog.">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/rich-text.css">
+</head>
+<body>
+
+  <!-- Sticky Navbar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="brand">
+        <div class="brand-icon">⚡</div>
+        <div>Apex<span>Blog</span></div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="/" class="nav-link">← All Articles</a></li>
+        <li id="nav-admin-link" style="display: none;"><a href="/admin" class="nav-link">Admin Dashboard</a></li>
+      </ul>
+
+      <div class="nav-actions" id="nav-actions">
+        <button class="theme-toggle" title="Toggle Theme">☀️</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content container">
+    <!-- Article Container -->
+    <div id="article-container">
+      <div style="text-align: center; padding: 4rem 0; color: var(--text-muted);">
+        <div style="font-size: 2rem; margin-bottom: 1rem;">⚡</div>
+        Loading article details...
+      </div>
+    </div>
+
+    <!-- Social & Like Engagement Bar -->
+    <div class="social-bar" id="social-bar" style="display: none;">
+      <div class="social-actions">
+        <button id="btn-like" class="btn-like" aria-label="Like this article">
+          <span class="like-icon">❤️</span>
+          <span id="like-text">Like</span>
+          <span id="like-count" style="margin-left: 0.25rem;">0</span>
+        </button>
+
+        <a href="#discussions" class="social-count-item" title="Jump to discussions">
+          <span>💬</span>
+          <span id="social-comment-count">0 comments</span>
+        </a>
+      </div>
+
+      <div style="font-size: 0.85rem; color: var(--text-muted);" id="reading-time-badge">
+        5 min read
+      </div>
+    </div>
+
+    <!-- Multi-Level Threaded Discussions Section -->
+    <section id="discussions" class="discussion-section" style="display: none;">
+      <div class="discussion-header">
+        <h2 class="discussion-title">
+          Community Discussions (<span id="total-comments-count">0</span>)
+        </h2>
+      </div>
+
+      <!-- Top-Level Comment Composer or Guest Login Prompt -->
+      <div id="comment-composer-area">
+        <!-- Injected via JavaScript based on auth state -->
+      </div>
+
+      <!-- Recursive Threaded Comments Tree -->
+      <div class="comment-tree" id="comment-tree">
+        <!-- Rendered recursively via comments.js -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Guest Action Modal -->
+  <div class="modal-backdrop" id="guest-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Authentication Required</h3>
+        <button class="modal-close" onclick="closeGuestModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: 1.25rem; color: var(--text-secondary);">
+          You must be logged in with a registered reader account to like articles, write comments, or post replies.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <a href="/login" class="btn btn-outline btn-sm">Sign In</a>
+          <a href="/register" class="btn btn-primary btn-sm">Create an Account</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cascade Delete Confirmation Modal -->
+  <div class="modal-backdrop" id="delete-confirm-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--danger-light);">Confirm Deletion</h3>
+        <button class="modal-close" onclick="closeDeleteModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="delete-warning-text" style="color: var(--text-primary); margin-bottom: 1rem;">
+          Are you sure you want to delete this comment?
+        </p>
+        <p style="font-size: 0.875rem; color: var(--danger-light); background: var(--danger-bg); padding: 0.75rem; border-radius: var(--radius-sm);">
+          ⚠️ <strong>Cascade Warning:</strong> Any child replies nested under this comment will also be permanently deleted from the database.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="closeDeleteModal()">Cancel</button>
+        <button id="btn-confirm-delete" class="btn btn-danger btn-sm">Delete Permanently</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Footer -->
+  <footer style="border-top: 1px solid var(--border); padding: 2.5rem 0; text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: 5rem;">
+    <div class="container">
+      <p style="margin-bottom: 0.5rem;"><strong>ApexBlog</strong> — Engineered with Node.js, SQLite WAL & Vanilla CSS</p>
+      <p>© 2026 ApexBlog Platform. Production-grade Full-Stack Architecture.</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/comments.js"></script>
+  <script src="/js/blog-detail.js"></script>
+</body>
+</html>

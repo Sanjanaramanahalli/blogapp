@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Test artifacts
+playwright-report/
+test-results/
+.playwright/
+
+# SQLite databases & temp files
+server/data/*.db
+server/data/*.db-wal
+server/data/*.db-shm
+*.db
+*.db-wal
+*.db-shm
+
+# Environment & logs
+.env
+*.log
+npm-debug.log*
+
+# OS specific
+.DS_Store
+Thumbs.db
