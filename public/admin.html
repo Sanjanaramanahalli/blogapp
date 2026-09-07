@@ -239,6 +239,9 @@
               <button type="button" class="toolbar-btn" onclick="insertTag('<h3>', '</h3>')" title="Heading 3">H3</button>
               <button type="button" class="toolbar-btn" onclick="insertTag('<blockquote>', '</blockquote>')" title="Blockquote">“”</button>
               <button type="button" class="toolbar-btn" onclick="insertTag('<code>', '</code>')" title="Inline Code">&lt;/&gt;</button>
+              <button type="button" class="toolbar-btn" onclick="insertTag('<pre><code>\n', '\n</code></pre>')" title="Code Block" style="width: auto; padding: 0 0.4rem; font-size: 0.75rem;">&lt;pre&gt;</button>
+              <button type="button" class="toolbar-btn" onclick="insertList('ul')" title="Bullet List" style="width: auto; padding: 0 0.4rem; font-size: 0.75rem;">&bull; List</button>
+              <button type="button" class="toolbar-btn" onclick="insertList('ol')" title="Numbered List" style="width: auto; padding: 0 0.4rem; font-size: 0.75rem;">1. List</button>
               <button type="button" class="toolbar-btn" onclick="insertTag('<p>', '</p>')" title="Paragraph">&para;</button>
             </div>
             <textarea id="blog-body-input" class="form-control editor-textarea" placeholder="Write article content in rich HTML format..." required></textarea>
