@@ -102,4 +102,37 @@ test.describe('M3: Community Engagement (Likes & Multi-Level Discussions)', () =
     await expect(page.locator('.comment-card', { hasText: replyText })).toBeHidden();
   });
 
+  test('Negative: Anonymous User Sees Guest Prompt and Cannot Comment Directly', async ({ page, request }) => {
+    // 1. Visit blog page without logging in
+    await page.goto('/blog/deep-dive-into-multi-level-comment-hierarchies');
+    await expect(page.locator('#discussions')).toBeVisible();
+
+    // Guest prompt box is rendered, comment input is not available for guests
+    await expect(page.locator('.guest-prompt-box')).toBeVisible();
+    await expect(page.locator('#top-comment-input')).toHaveCount(0);
+
+    // 2. Direct API call without authentication header must return 401
+    const res = await request.post('/api/blogs/2/comments', {
+      data: { content: 'Malicious guest attempt' }
+    });
+    expect(res.status()).toBe(401);
+  });
+
+  test('Negative: Empty or Whitespace-Only Comment Submission is Rejected', async ({ request }) => {
+    // 1. Login as Reader (John) to get cookie
+    const loginRes = await request.post('/api/auth/login', {
+      data: { email: 'john@reader.com', password: 'Reader@123' }
+    });
+    expect(loginRes.status()).toBe(200);
+
+    // 2. Attempt empty comment
+    const emptyRes = await request.post('/api/blogs/2/comments', {
+      data: { content: '   ' }
+    });
+    expect(emptyRes.status()).toBe(400);
+    const body = await emptyRes.json();
+    expect(body.error).toContain('cannot be empty');
+  });
+
 });
+
