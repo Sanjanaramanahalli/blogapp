@@ -198,13 +198,26 @@
   color: var(--text-secondary);
   font-weight: 600;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
 }
 
-.btn-like:hover {
+.btn-like:hover:not(:disabled) {
   border-color: #f43f5e;
   color: #f43f5e;
   background: rgba(244, 63, 94, 0.08);
+  transform: translateY(-1px);
+}
+
+.btn-like:focus-visible {
+  outline: 2px solid #f43f5e;
+  outline-offset: 2px;
+}
+
+.btn-like:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-like.liked {
@@ -212,12 +225,21 @@
   color: #ffffff;
   border-color: #f43f5e;
   box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
-  animation: heartPulse 0.35s ease;
+  animation: heartPulse 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-like .like-icon {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.btn-like:hover .like-icon {
+  transform: scale(1.15);
 }
 
 @keyframes heartPulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  40% { transform: scale(1.18); }
   100% { transform: scale(1); }
 }
 

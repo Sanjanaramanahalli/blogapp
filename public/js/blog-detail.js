@@ -126,11 +126,12 @@ async function handleLikeToggle() {
   }
 
   const likeBtn = document.getElementById('btn-like');
-  if (!likeBtn || !currentBlog) return;
+  if (!likeBtn || !currentBlog || likeBtn.disabled) return;
 
   try {
     likeBtn.disabled = true;
-    const res = await API.request(`/api/blogs/${currentBlog.id}/likes/toggle`, {
+    // Call standard endpoint /api/blogs/:id/like
+    const res = await API.request(`/api/blogs/${currentBlog.id}/like`, {
       method: 'POST'
     });
 
@@ -138,7 +139,7 @@ async function handleLikeToggle() {
     currentBlog.like_count = res.likeCount;
     updateLikeButtonUI(res.liked, res.likeCount);
 
-    showToast(res.liked ? 'Added to your liked articles!' : 'Removed like.');
+    showToast(res.liked ? 'Added to your liked articles! ❤️' : 'Removed like.');
   } catch (err) {
     showToast(err.message || 'Failed to update like status.', 'error');
   } finally {
@@ -151,14 +152,20 @@ function updateLikeButtonUI(liked, count) {
   const likeCount = document.getElementById('like-count');
   const likeText = document.getElementById('like-text');
 
+  const isLiked = Boolean(liked);
+  const numericCount = Number(count) || 0;
+
   if (likeBtn) {
-    likeBtn.classList.toggle('liked', !!liked);
+    likeBtn.classList.toggle('liked', isLiked);
+    likeBtn.setAttribute('aria-pressed', isLiked ? 'true' : 'false');
+    likeBtn.setAttribute('title', isLiked ? 'Unlike this article' : 'Like this article');
   }
   if (likeCount) {
-    likeCount.textContent = count;
+    likeCount.textContent = numericCount;
+    likeCount.setAttribute('aria-label', `${numericCount} likes`);
   }
   if (likeText) {
-    likeText.textContent = liked ? 'Liked' : 'Like';
+    likeText.textContent = isLiked ? 'Liked' : 'Like';
   }
 }
 
