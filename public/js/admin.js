@@ -302,6 +302,24 @@ function formatDoc(command) {
   if (command === 'italic') insertTag('<em>', '</em>');
 }
 
+function insertList(type) {
+  const textarea = document.getElementById('blog-body-input');
+  if (!textarea) return;
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selected = textarea.value.substring(start, end).trim();
+  const tag = type === 'ol' ? 'ol' : 'ul';
+  let itemsHtml = '';
+  if (selected) {
+    itemsHtml = selected.split('\n').filter(l => l.trim().length > 0).map(l => `  <li>${l.trim()}</li>`).join('\n');
+  } else {
+    itemsHtml = '  <li>List item 1</li>\n  <li>List item 2</li>';
+  }
+  const replacement = `\n<${tag}>\n${itemsHtml}\n</${tag}>\n`;
+  textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+  textarea.focus();
+}
+
 // Load Categories for Modal Checkboxes
 async function loadCategoryCheckboxes(selectedIds = []) {
   const container = document.getElementById('blog-category-checks');
