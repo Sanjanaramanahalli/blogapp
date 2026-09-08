@@ -82,9 +82,20 @@ CREATE TABLE IF NOT EXISTS likes (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Password Resets & OTP Table
+CREATE TABLE IF NOT EXISTS password_resets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL COLLATE NOCASE,
+  otp TEXT NOT NULL,
+  expires_at DATETIME NOT NULL,
+  used INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_blogs_status ON blogs(status);
 CREATE INDEX IF NOT EXISTS idx_blogs_slug ON blogs(slug);
 CREATE INDEX IF NOT EXISTS idx_comments_blog_id ON comments(blog_id);
 CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id);
 CREATE INDEX IF NOT EXISTS idx_likes_blog_id ON likes(blog_id);
+CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email);
