@@ -46,15 +46,23 @@
         </div>
       </div>
 
-      <form id="login-form">
+      <!-- Accessible Alert Banner -->
+      <div id="login-error-alert" role="alert" aria-live="polite" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); color: #fca5a5; font-size: 0.9rem; margin-bottom: 1.25rem;"></div>
+
+      <form id="login-form" novalidate>
         <div class="form-group">
           <label class="form-label" for="login-email">Email Address</label>
-          <input type="email" id="login-email" class="form-control" placeholder="name@example.com" required autofocus>
+          <input type="email" id="login-email" class="form-control" placeholder="name@example.com" required autofocus autocomplete="email">
         </div>
 
         <div class="form-group">
           <label class="form-label" for="login-password">Password</label>
-          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required autocomplete="current-password" style="padding-right: 2.75rem; width: 100%;">
+            <button type="button" id="btn-toggle-password" class="btn-icon" aria-label="Show password" aria-pressed="false" style="position: absolute; right: 0.75rem; background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--text-muted); padding: 0.25rem; display: flex; align-items: center; justify-content: center;" title="Show/Hide Password">
+              👁️
+            </button>
+          </div>
         </div>
 
         <button type="submit" class="btn btn-primary" id="btn-submit-login" style="width: 100%; margin-top: 0.5rem;">
@@ -72,13 +80,28 @@
   <script src="/js/api.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const errorAlert = document.getElementById('login-error-alert');
+      const passwordInput = document.getElementById('login-password');
+      const togglePasswordBtn = document.getElementById('btn-toggle-password');
+
+      // Password visibility toggle
+      togglePasswordBtn?.addEventListener('click', () => {
+        const isPassword = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        togglePasswordBtn.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
+        togglePasswordBtn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+        togglePasswordBtn.textContent = isPassword ? '🙈' : '👁️';
+      });
+
       // Demo pre-fill buttons
       document.getElementById('btn-fill-admin')?.addEventListener('click', () => {
+        if (errorAlert) errorAlert.style.display = 'none';
         document.getElementById('login-email').value = 'admin@blog.com';
         document.getElementById('login-password').value = 'Admin@123456';
       });
 
       document.getElementById('btn-fill-reader')?.addEventListener('click', () => {
+        if (errorAlert) errorAlert.style.display = 'none';
         document.getElementById('login-email').value = 'john@reader.com';
         document.getElementById('login-password').value = 'Reader@123';
       });
@@ -86,9 +109,19 @@
       // Login submission
       document.getElementById('login-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (errorAlert) errorAlert.style.display = 'none';
+
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
         const btn = document.getElementById('btn-submit-login');
+
+        if (!email || !password) {
+          if (errorAlert) {
+            errorAlert.textContent = 'Please enter both your email and password.';
+            errorAlert.style.display = 'block';
+          }
+          return;
+        }
 
         try {
           btn.disabled = true;
@@ -113,7 +146,12 @@
           }, 400);
 
         } catch (err) {
-          showToast(err.message || 'Invalid email or password.', 'error');
+          const errMsg = err.message || 'Invalid email or password.';
+          if (errorAlert) {
+            errorAlert.textContent = errMsg;
+            errorAlert.style.display = 'block';
+          }
+          showToast(errMsg, 'error');
           btn.disabled = false;
           btn.textContent = 'Sign In';
         }
