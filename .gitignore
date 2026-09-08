@@ -22,3 +22,9 @@ npm-debug.log*
 # OS specific
 .DS_Store
 Thumbs.db
+
+# User uploads & test fixtures
+public/uploads/*
+!public/uploads/.gitkeep
+tests/e2e/fixtures/
+
