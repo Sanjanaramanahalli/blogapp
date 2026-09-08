@@ -175,6 +175,8 @@ test.describe('[ISSUE-12] Forgot Password Option with Email OTP Verification & P
     await page.fill('#forgot-email', 'john@reader.com');
     await page.click('#btn-send-otp');
 
+    await expect(page.locator('#step-forgot-otp')).toBeVisible();
+
     const otpRecord = db.prepare('SELECT otp FROM password_resets WHERE email = ? ORDER BY id DESC LIMIT 1').get('john@reader.com');
     await page.fill('#forgot-otp', otpRecord.otp);
     await page.click('#btn-verify-otp');
