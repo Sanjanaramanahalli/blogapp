@@ -41,6 +41,11 @@ async function loadBlogDetail() {
     currentBlog = data.blog;
 
     document.title = `${currentBlog.title} — ApexBlog`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc && currentBlog.body) {
+      const cleanDesc = currentBlog.body.replace(/<[^>]*>/g, '').trim().substring(0, 160);
+      metaDesc.setAttribute('content', cleanDesc);
+    }
 
     // Render Article
     const cover = currentBlog.cover_image || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80';
@@ -57,7 +62,7 @@ async function loadBlogDetail() {
       .join('');
 
     container.innerHTML = `
-      <article>
+      <article class="article-detail-view">
         <header class="article-header">
           <div class="article-categories">
             ${categoriesHtml || '<span class="category-badge">Engineering</span>'}
@@ -69,7 +74,11 @@ async function loadBlogDetail() {
             </div>
             <div class="article-author-info">
               <div class="article-author-name">${escapeHtml(currentBlog.author_name)}</div>
-              <div class="article-date">Published ${formatRelativeTime(currentBlog.created_at)} • ${readingTime}</div>
+              <div class="article-date-meta">
+                Published <time datetime="${escapeHtml(currentBlog.created_at)}" class="article-date">${formatRelativeTime(currentBlog.created_at)}</time>
+                <span class="reading-time-sep" style="margin: 0 0.35rem; color: var(--text-muted);">•</span>
+                <span class="article-reading-time">${readingTime}</span>
+              </div>
             </div>
           </div>
         </header>
@@ -106,14 +115,51 @@ async function loadBlogDetail() {
   } catch (err) {
     console.error('Error loading article:', err);
     if (container) {
-      container.innerHTML = `
-        <div class="empty-state" style="border-color: var(--danger);">
-          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔒</div>
-          <h2 class="empty-title">Article Unavailable</h2>
-          <p class="empty-text">${escapeHtml(err.message || 'The article could not be loaded.')}</p>
-          <a href="/" class="btn btn-primary btn-sm">Return to Articles</a>
-        </div>
-      `;
+      const is404 = err.status === 404 || (err.message && err.message.toLowerCase().includes('not found'));
+      const isDraft403 = err.status === 403 || (err.message && (err.message.toLowerCase().includes('draft') || err.message.toLowerCase().includes('denied')));
+
+      if (is404) {
+        document.title = 'Blog Not Found — ApexBlog';
+        container.innerHTML = `
+          <div class="empty-state not-found-state" style="border-color: var(--border-strong); padding: 4rem 2rem;">
+            <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔍</div>
+            <h2 class="empty-title">Blog Not Found</h2>
+            <p class="empty-text" style="max-width: 520px; margin: 0 auto 1.5rem; color: var(--text-secondary);">
+              The requested article does not exist, has been deleted, or the slug/ID is invalid.
+            </p>
+            <div style="display: flex; gap: 0.75rem; justify-content: center;">
+              <a href="/" class="btn btn-primary btn-sm" id="btn-return-home">Browse All Articles</a>
+            </div>
+          </div>
+        `;
+      } else if (isDraft403) {
+        document.title = 'Access Denied — ApexBlog';
+        container.innerHTML = `
+          <div class="empty-state draft-access-state" style="border-color: var(--danger); padding: 4rem 2rem;">
+            <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔒</div>
+            <h2 class="empty-title">Article Unavailable: Access Denied</h2>
+            <p class="empty-text" style="max-width: 520px; margin: 0 auto 1.5rem; color: var(--text-secondary);">
+              ${escapeHtml(err.message || 'This article is currently an unpublished draft and is restricted to administrators.')}
+            </p>
+            <div style="display: flex; gap: 0.75rem; justify-content: center;">
+              <a href="/" class="btn btn-secondary btn-sm">Return to Articles</a>
+              <a href="/login" class="btn btn-primary btn-sm">Sign In as Admin</a>
+            </div>
+          </div>
+        `;
+      } else {
+        document.title = 'Article Unavailable — ApexBlog';
+        container.innerHTML = `
+          <div class="empty-state" style="border-color: var(--danger); padding: 4rem 2rem;">
+            <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚠️</div>
+            <h2 class="empty-title">Article Unavailable</h2>
+            <p class="empty-text" style="max-width: 520px; margin: 0 auto 1.5rem; color: var(--text-secondary);">
+              ${escapeHtml(err.message || 'The article could not be loaded.')}
+            </p>
+            <a href="/" class="btn btn-primary btn-sm">Return to Articles</a>
+          </div>
+        `;
+      }
     }
   }
 }

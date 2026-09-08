@@ -142,7 +142,7 @@ function updateComment(req, res) {
 
     db.prepare(`
       UPDATE comments 
-      SET content = ?, updated_at = CURRENT_TIMESTAMP 
+      SET content = ?, updated_at = strftime('%Y-%m-%d %H:%M:%f', 'now') 
       WHERE id = ?
     `).run(content.trim(), id);
 
