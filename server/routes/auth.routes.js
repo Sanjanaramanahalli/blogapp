@@ -9,4 +9,9 @@ router.post('/logout', authController.logout);
 router.get('/me', authController.getMe);
 router.put('/profile', requireAuth, authController.updateProfile);
 
+// Password recovery with OTP routes
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/verify-otp', authController.verifyOtp);
+router.post('/reset-password', authController.resetPassword);
+
 module.exports = router;

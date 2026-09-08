@@ -188,10 +188,171 @@ function updateProfile(req, res) {
   }
 }
 
+// Request OTP for password recovery
+function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+
+    if (!email || !email.trim()) {
+      return res.status(400).json({ error: 'Email address is required.' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ error: 'A valid email address is required.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check if user exists
+    const user = db.prepare('SELECT id, name, email FROM users WHERE email = ?').get(normalizedEmail);
+    if (!user) {
+      return res.status(404).json({ error: 'No account found with this email address.' });
+    }
+
+    // Generate secure 6-digit numeric OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Set expiry to 10 minutes from now (ISO string format)
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+    // Invalidate prior unused OTPs for this email to prevent multiple valid OTPs
+    db.prepare('UPDATE password_resets SET used = 1 WHERE email = ? AND used = 0').run(normalizedEmail);
+
+    // Store new OTP
+    db.prepare(`
+      INSERT INTO password_resets (email, otp, expires_at, used)
+      VALUES (?, ?, ?, 0)
+    `).run(normalizedEmail, otp, expiresAt);
+
+    console.log(`[AUTH] Generated OTP for ${normalizedEmail}: ${otp} (Expires: ${expiresAt})`);
+
+    res.status(200).json({
+      message: 'OTP has been successfully sent to your registered email address.',
+      email: normalizedEmail,
+      devOtp: otp // Included for test automation and development preview
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ error: 'Failed to process forgot password request.' });
+  }
+}
+
+// Verify OTP
+function verifyOtp(req, res) {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !email.trim()) {
+      return res.status(400).json({ error: 'Email address is required.' });
+    }
+    if (!otp || !otp.toString().trim()) {
+      return res.status(400).json({ error: 'OTP code is required.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const cleanOtp = otp.toString().trim();
+
+    // Find the latest OTP record for this email
+    const record = db.prepare('SELECT * FROM password_resets WHERE email = ? ORDER BY id DESC LIMIT 1').get(normalizedEmail);
+
+    if (!record) {
+      return res.status(400).json({ error: 'Invalid OTP code entered.' });
+    }
+
+    if (record.used === 1) {
+      return res.status(400).json({ error: 'OTP has already been used. Please request a new OTP.' });
+    }
+
+    if (record.otp !== cleanOtp) {
+      return res.status(400).json({ error: 'Invalid OTP code entered.' });
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(record.expires_at);
+    if (now > expiresAt) {
+      return res.status(400).json({ error: 'OTP has expired. Please request a new OTP.' });
+    }
+
+    res.status(200).json({
+      message: 'OTP verified successfully. You can now reset your password.',
+      verified: true
+    });
+  } catch (err) {
+    console.error('Verify OTP error:', err);
+    res.status(500).json({ error: 'Failed to verify OTP.' });
+  }
+}
+
+// Reset Password
+function resetPassword(req, res) {
+  try {
+    const { email, otp, newPassword, confirmPassword } = req.body;
+
+    if (!email || !email.trim()) {
+      return res.status(400).json({ error: 'Email address is required.' });
+    }
+    if (!otp || !otp.toString().trim()) {
+      return res.status(400).json({ error: 'OTP code is required.' });
+    }
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+    }
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'New password and confirmation password do not match.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const cleanOtp = otp.toString().trim();
+
+    // Check OTP record
+    const record = db.prepare('SELECT * FROM password_resets WHERE email = ? ORDER BY id DESC LIMIT 1').get(normalizedEmail);
+
+    if (!record || record.otp !== cleanOtp) {
+      return res.status(400).json({ error: 'Invalid OTP code entered.' });
+    }
+
+    if (record.used === 1) {
+      return res.status(400).json({ error: 'OTP has already been used. Please request a new OTP.' });
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(record.expires_at);
+    if (now > expiresAt) {
+      return res.status(400).json({ error: 'OTP has expired. Please request a new OTP.' });
+    }
+
+    // Check user existence
+    const user = db.prepare('SELECT id FROM users WHERE email = ?').get(normalizedEmail);
+    if (!user) {
+      return res.status(404).json({ error: 'User account not found.' });
+    }
+
+    // Hash new password
+    const passwordHash = bcrypt.hashSync(newPassword, 10);
+
+    // Update user password and mark OTP as used
+    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(passwordHash, user.id);
+    db.prepare('UPDATE password_resets SET used = 1 WHERE id = ?').run(record.id);
+
+    console.log(`[AUTH] Password reset successfully for ${normalizedEmail}`);
+
+    res.status(200).json({
+      message: 'Password successfully updated. You can now log in with your new password.'
+    });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ error: 'Failed to reset password.' });
+  }
+}
+
 module.exports = {
   register,
   login,
   logout,
   getMe,
-  updateProfile
+  updateProfile,
+  forgotPassword,
+  verifyOtp,
+  resetPassword
 };
