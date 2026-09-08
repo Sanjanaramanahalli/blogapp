@@ -96,15 +96,37 @@ node tests/backend-integration.test.js
 ├── tests/                      # Automated Verification
 │   ├── backend-integration.test.js
 │   └── e2e/
-│       ├── auth-rbac.spec.js
-│       ├── blogs-publishing.spec.js
-│       ├── discussions-likes.spec.js
-│       └── admin-management.spec.js
+│       ├── auth-rbac.spec.js           # 6 tests: Reader/Admin auth, RBAC guard, input validation
+│       ├── blogs-publishing.spec.js    # 6 tests: CMS lifecycle, rich-text editor, authoring
+│       ├── blog-feed.spec.js           # 11 tests: Search, taxonomy filter, chip removal, pagination
+│       ├── blog-detail.spec.js         # 6 tests: Semantic HTML, dynamic reading time, 404/403 states
+│       ├── discussions-likes.spec.js   # 5 tests: Atomic likes, threaded comments, cascade delete
+│       ├── file-upload.spec.js         # 6 tests: Multer upload engine, MIME verify, live preview
+│       └── admin-management.spec.js    # 8 tests: Metrics, user management, comment moderation
 ├── development_plan.md         # Scrum backlog, milestones, and issue specifications
 ├── implementation_plan.md      # Architectural design & consensus panel review
-├── PRESENTATION.md             # Complete 10-15 min presentation deck & demo script
+├── PRESENTATION.md             # Complete 16-slide presentation deck & live demo script
+├── walkthrough.md              # Historical sprint walkthroughs & verification reports
 └── package.json
 ```
+
+---
+
+## 🏆 Sprint & Quality Gate Verification Matrix
+
+| Sprint | Ticket | Domain | Specs / Features | E2E Tests | Status |
+| :---: | :--- | :--- | :--- | :---: | :---: |
+| **Sprint 1** | [ISSUE-01] | Database Architecture | SQLite WAL schema, foreign keys, cascade deletes | 12 API | ✅ Verified |
+| **Sprint 2** | [ISSUE-02] | Authentication & RBAC | JWT auth, role cookies, guest guard, register/login UX | 6 E2E | ✅ Verified |
+| **Sprint 3** | [ISSUE-03] | File Upload Engine | Multer storage, MIME verification, size limit, live preview | 6 E2E | ✅ Verified |
+| **Sprint 4** | [ISSUE-04] | Publishing Engine & CMS | Rich text authoring, draft/publish lifecycle, categories/tags | 6 E2E | ✅ Verified |
+| **Sprint 5** | [ISSUE-05] | Discovery & Public Feed | Debounced search, multi-category filter, chips, pagination | 11 E2E | ✅ Verified |
+| **Sprint 6** | [ISSUE-07] | Binary Likes Engine | Atomic binary like/unlike, duplicate prevention, counts | 2 E2E | ✅ Verified |
+| **Sprint 7** | [ISSUE-08] | Nested Discussions | Recursive comment tree, inline reply, author edit, cascade | 3 E2E | ✅ Verified |
+| **Sprint 8** | [ISSUE-06] | Public Blog Detail View | Semantic `<article>`, `<time>`, reading time, custom 404/403 | 6 E2E | ✅ Verified |
+| **Sprint 9** | [ISSUE-09] | Admin Governance Panel | Metrics grid, reader management, comment moderation | 8 E2E | ✅ Verified |
+| **Sprint 10**| [ISSUE-10] | Playwright Quality Gate | Automated regression test suite across all 7 specs (48 tests) | 48 E2E | ✅ Verified |
+| **Sprint 11**| [ISSUE-11] | Project Presentation & Docs | Complete deck (`PRESENTATION.md`), walkthrough, setup guide | Docs | ✅ Verified |
 
 ---
 
