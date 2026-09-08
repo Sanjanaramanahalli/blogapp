@@ -210,6 +210,19 @@ function forgotPassword(req, res) {
       return res.status(404).json({ error: 'No account found with this email address.' });
     }
 
+    // Rate limiting: Limit to 3 OTP requests per 5 minutes per email
+    const recentRequests = db.prepare(`
+      SELECT COUNT(*) AS count 
+      FROM password_resets 
+      WHERE email = ? AND created_at > datetime('now', '-5 minutes')
+    `).get(normalizedEmail);
+
+    if (recentRequests && recentRequests.count >= 3) {
+      return res.status(429).json({
+        error: 'Too many OTP requests. Please wait a few minutes before requesting another code.'
+      });
+    }
+
     // Generate secure 6-digit numeric OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     

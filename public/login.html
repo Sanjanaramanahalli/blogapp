@@ -285,10 +285,11 @@
       async function handleSendOtp() {
         clearForgotAlerts();
         const emailInput = document.getElementById('forgot-email');
-        const email = emailInput.value.trim();
+        const email = (emailInput && emailInput.value ? emailInput.value : activeRecoveryEmail || '').trim();
         const btn = document.getElementById('btn-send-otp');
+        const resendBtn = document.getElementById('btn-resend-otp');
 
-        // Negative 7: Empty email field
+        // Negative 3: Empty email field
         if (!email) {
           showForgotError('Email address is required.');
           return;
@@ -302,8 +303,14 @@
         }
 
         try {
-          btn.disabled = true;
-          btn.textContent = 'Sending OTP...';
+          if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Sending OTP...';
+          }
+          if (resendBtn) {
+            resendBtn.disabled = true;
+            resendBtn.textContent = 'Resending...';
+          }
 
           const res = await API.request('/api/auth/forgot-password', {
             method: 'POST',
@@ -325,12 +332,18 @@
           document.getElementById('forgot-otp').focus();
 
         } catch (err) {
-          // Negative 1: Unregistered email or other error
+          // Negative 1: Unregistered email, Negative 5: Rate limit error
           const msg = err.message || 'System error sending OTP.';
           showForgotError(msg);
         } finally {
-          btn.disabled = false;
-          btn.textContent = 'Send OTP';
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Send OTP';
+          }
+          if (resendBtn) {
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Resend OTP';
+          }
         }
       }
 

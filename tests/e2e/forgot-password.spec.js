@@ -4,6 +4,8 @@ const { db } = require('../../server/db/database');
 test.describe('[ISSUE-12] Forgot Password Option with Email OTP Verification & Password Reset', () => {
 
   test.beforeEach(async ({ page }) => {
+    // Clean slate for test email to ensure rate-limit test isolation
+    db.prepare("DELETE FROM password_resets WHERE email = ?").run('john@reader.com');
     // Navigate to login page
     await page.goto('/login');
   });
