@@ -311,6 +311,12 @@ function toggleEditForm(commentId) {
       container.innerHTML = '';
       contentEl.textContent = updatedContent;
       contentEl.style.display = 'block';
+
+      const timeEl = document.querySelector(`#comment-card-${commentId} .comment-time`);
+      if (timeEl && !timeEl.textContent.includes('(edited)')) {
+        timeEl.innerHTML += ' <span style="font-style: italic; color: var(--text-muted); margin-left: 0.25rem;">(edited)</span>';
+      }
+
       await loadComments();
     } catch (err) {
       showToast(err.message || 'Failed to update comment.', 'error');
