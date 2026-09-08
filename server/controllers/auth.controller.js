@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { db } = require('../db/database');
 const { generateToken } = require('../middleware/auth');
+const { sendOtpEmail } = require('../utils/mailer');
 
 // Register a new Reader
 function register(req, res) {
@@ -189,7 +190,7 @@ function updateProfile(req, res) {
 }
 
 // Request OTP for password recovery
-function forgotPassword(req, res) {
+async function forgotPassword(req, res) {
   try {
     const { email } = req.body;
 
@@ -238,12 +239,21 @@ function forgotPassword(req, res) {
       VALUES (?, ?, ?, 0)
     `).run(normalizedEmail, otp, expiresAt);
 
+    // Dispatch real email to user's registered inbox via Nodemailer
+    let emailResult = null;
+    try {
+      emailResult = await sendOtpEmail(normalizedEmail, otp);
+    } catch (mailErr) {
+      console.error('[AUTH] Email sending failed:', mailErr);
+    }
+
     console.log(`[AUTH] Generated OTP for ${normalizedEmail}: ${otp} (Expires: ${expiresAt})`);
 
     res.status(200).json({
       message: 'OTP has been successfully sent to your registered email address.',
       email: normalizedEmail,
-      devOtp: otp // Included for test automation and development preview
+      previewUrl: emailResult?.previewUrl || null,
+      devOtp: otp // Kept for test automation
     });
   } catch (err) {
     console.error('Forgot password error:', err);

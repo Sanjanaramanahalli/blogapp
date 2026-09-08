@@ -221,10 +221,14 @@
         if (typeof showToast === 'function') showToast(msg, 'error');
       }
 
-      function showForgotSuccess(msg) {
+      function showForgotSuccess(msg, htmlContent) {
         if (forgotErrorAlert) forgotErrorAlert.style.display = 'none';
         if (forgotSuccessAlert) {
-          forgotSuccessAlert.textContent = msg;
+          if (htmlContent) {
+            forgotSuccessAlert.innerHTML = htmlContent;
+          } else {
+            forgotSuccessAlert.textContent = msg;
+          }
           forgotSuccessAlert.style.display = 'block';
         }
         if (typeof showToast === 'function') showToast(msg, 'success');
@@ -325,7 +329,13 @@
             window.__lastGeneratedOtp = res.devOtp;
           }
 
-          showForgotSuccess(res.message || 'OTP is successfully sent to the registered email address.');
+          let successText = res.message || 'OTP is successfully sent to your registered email address.';
+          let successHtml = `<span>${successText}</span>`;
+          if (res.previewUrl) {
+            successHtml += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.12);"><a href="${res.previewUrl}" target="_blank" rel="noopener noreferrer" id="link-email-inbox" style="color: #38bdf8; text-decoration: underline; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">📬 Open Registered Email Inbox ↗</a></div>`;
+          }
+
+          showForgotSuccess(successText, successHtml);
           stepEmail.style.display = 'none';
           stepOtp.style.display = 'block';
           document.getElementById('forgot-otp').value = '';
