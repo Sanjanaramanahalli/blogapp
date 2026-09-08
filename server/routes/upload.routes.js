@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/upload');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
 const uploadFields = upload.fields([
   { name: 'image', maxCount: 1 },
@@ -38,7 +38,7 @@ function handleUpload(req, res) {
 }
 
 // Support both /api/uploads and /api/uploads/cover
-router.post('/', requireAdmin, handleUpload);
-router.post('/cover', requireAdmin, handleUpload);
+router.post('/', requireAuth, handleUpload);
+router.post('/cover', requireAuth, handleUpload);
 
 module.exports = router;

@@ -53,6 +53,26 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+function requireOwnerOrAdmin(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({
+      error: 'Authentication required. Please log in to perform this action.'
+    });
+  }
+  if (req.user.role === 'admin') {
+    return next();
+  }
+  const blogId = req.params.id || req.params.blogId;
+  const blog = db.prepare('SELECT author_id FROM blogs WHERE id = ?').get(blogId);
+  if (!blog) {
+    return res.status(404).json({ error: 'Blog not found.' });
+  }
+  if (blog.author_id !== req.user.id) {
+    return res.status(403).json({ error: 'Forbidden. You do not have permission to modify this article.' });
+  }
+  next();
+}
+
 function generateToken(user) {
   return jwt.sign(
     { id: user.id, email: user.email, role: user.role },
@@ -65,6 +85,7 @@ module.exports = {
   authenticate,
   requireAuth,
   requireAdmin,
+  requireOwnerOrAdmin,
   generateToken,
   JWT_SECRET
 };

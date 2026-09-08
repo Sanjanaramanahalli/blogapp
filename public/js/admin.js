@@ -126,9 +126,17 @@ async function loadAdminBlogs() {
           </td>
           <td>${categoriesStr}</td>
           <td>
-            <span style="font-size: 0.85rem; color: var(--text-muted);">
-              ❤️ ${b.like_count} &nbsp; 💬 ${b.comment_count}
-            </span>
+            <div style="display: inline-flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-outline btn-sm btn-action-like ${b.user_liked ? 'liked' : ''}" id="admin-like-btn-${b.id}" onclick="handleAdminLikeBlog(${b.id})" title="${b.user_liked ? 'Unlike article' : 'Like article'}">
+                ❤️ <span id="admin-like-count-${b.id}">${b.like_count}</span>
+              </button>
+              <button type="button" class="btn btn-outline btn-sm btn-action-comment" id="admin-comment-btn-${b.id}" onclick="openAdminCommentModal(${b.id}, '${escapeHtml(b.title).replace(/'/g, "\\'")}')" title="Discussions">
+                💬 <span id="admin-comment-count-${b.id}">${b.comment_count}</span>
+              </button>
+              <button type="button" class="btn btn-outline btn-sm btn-action-share" id="admin-share-btn-${b.id}" onclick="openAdminShareModal(${b.id}, '${escapeHtml(b.title).replace(/'/g, "\\'")}', '${escapeHtml(b.slug)}')" title="Share Article">
+                🔗 Share
+              </button>
+            </div>
           </td>
           <td style="font-size: 0.85rem; color: var(--text-muted);">${formatRelativeTime(b.created_at)}</td>
           <td style="text-align: right;">
@@ -602,4 +610,246 @@ document.addEventListener('DOMContentLoaded', async () => {
       showToast(err.message || 'Failed to update profile.', 'error');
     }
   });
+
+  // Admin Modal Comment Form
+  document.getElementById('admin-modal-comment-form')?.addEventListener('submit', handleAdminModalCommentSubmit);
 });
+
+// ==========================================
+// Admin Engagement Actions: Like, Comment, Share
+// ==========================================
+
+// 1. Admin Like / Unlike handler
+async function handleAdminLikeBlog(blogId) {
+  try {
+    const res = await API.request(`/api/blogs/${blogId}/like`, { method: 'POST' });
+    const btn = document.getElementById(`admin-like-btn-${blogId}`);
+    const countEl = document.getElementById(`admin-like-count-${blogId}`);
+
+    if (countEl) countEl.textContent = res.likeCount;
+    if (btn) {
+      if (res.liked) {
+        btn.classList.add('liked');
+        btn.title = 'Unlike article';
+      } else {
+        btn.classList.remove('liked');
+        btn.title = 'Like article';
+      }
+    }
+
+    showToast(res.liked ? 'Blog liked ❤️' : 'Blog unliked');
+    const statLikes = document.getElementById('stat-total-likes');
+    if (statLikes && statLikes.textContent !== '-') {
+      const current = parseInt(statLikes.textContent, 10) || 0;
+      statLikes.textContent = Math.max(0, current + (res.liked ? 1 : -1));
+    }
+  } catch (err) {
+    showToast(err.message || 'Failed to update like status.', 'error');
+  }
+}
+
+// 2. Admin Comment Modal handlers
+let currentCommentBlogId = null;
+
+async function openAdminCommentModal(blogId, blogTitle) {
+  currentCommentBlogId = blogId;
+  const modal = document.getElementById('admin-comment-modal');
+  const titleEl = document.getElementById('admin-comment-modal-title');
+  const blogIdInput = document.getElementById('admin-modal-blog-id');
+  const commentInput = document.getElementById('admin-modal-comment-input');
+
+  if (titleEl) titleEl.textContent = `Discussions: "${blogTitle}"`;
+  if (blogIdInput) blogIdInput.value = blogId;
+  if (commentInput) commentInput.value = '';
+
+  if (modal) modal.classList.add('active');
+  await loadAdminCommentsForBlog(blogId);
+}
+
+function closeAdminCommentModal() {
+  const modal = document.getElementById('admin-comment-modal');
+  if (modal) modal.classList.remove('active');
+  currentCommentBlogId = null;
+}
+
+async function loadAdminCommentsForBlog(blogId) {
+  const listEl = document.getElementById('admin-comment-modal-list');
+  if (!listEl) return;
+
+  listEl.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Loading comments...</div>';
+
+  try {
+    const data = await API.request(`/api/blogs/${blogId}/comments`);
+    const comments = data.comments || [];
+
+    function flattenTree(items, depth = 0) {
+      let result = [];
+      for (const item of items) {
+        result.push({ ...item, depth });
+        if (item.replies && item.replies.length > 0) {
+          result = result.concat(flattenTree(item.replies, depth + 1));
+        }
+      }
+      return result;
+    }
+
+    const flat = flattenTree(comments);
+
+    if (flat.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: var(--text-muted); background: var(--bg-surface); border-radius: var(--radius-md);">
+          No comments yet on this article. Be the first to start the discussion!
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = flat.map(c => `
+      <div class="admin-comment-card" style="margin-left: ${c.depth * 1.5}rem;">
+        <div class="admin-comment-card-header">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <strong>${escapeHtml(c.user_name)}</strong>
+            <span class="role-badge role-${c.user_role}" style="font-size: 0.65rem;">${c.user_role}</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">${formatRelativeTime(c.created_at)}</span>
+          </div>
+          <button type="button" class="btn btn-danger btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="deleteAdminComment(${c.id}, ${blogId})">
+            Delete 🗑️
+          </button>
+        </div>
+        <div class="admin-comment-card-body">${escapeHtml(c.content)}</div>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('Error loading comments in modal:', err);
+    listEl.innerHTML = `<div style="color: var(--danger-light); text-align: center;">Failed to load discussions.</div>`;
+  }
+}
+
+async function deleteAdminComment(commentId, blogId) {
+  if (!confirm('Are you sure you want to delete this comment? Any child replies will also be removed.')) {
+    return;
+  }
+
+  try {
+    const res = await API.request(`/api/comments/${commentId}`, { method: 'DELETE' });
+    showToast(res.message || 'Comment deleted.');
+    await loadAdminCommentsForBlog(blogId);
+    await loadAdminBlogs();
+  } catch (err) {
+    showToast(err.message || 'Failed to delete comment.', 'error');
+  }
+}
+
+async function handleAdminModalCommentSubmit(e) {
+  e.preventDefault();
+  const blogId = document.getElementById('admin-modal-blog-id').value || currentCommentBlogId;
+  const input = document.getElementById('admin-modal-comment-input');
+  const submitBtn = document.getElementById('btn-submit-admin-comment');
+  const content = input.value.trim();
+
+  if (!content) {
+    showToast('Please enter a comment.', 'error');
+    return;
+  }
+
+  try {
+    if (submitBtn) submitBtn.disabled = true;
+    await API.request(`/api/blogs/${blogId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ content })
+    });
+
+    showToast('Comment posted successfully! 💬');
+    input.value = '';
+    await loadAdminCommentsForBlog(blogId);
+    await loadAdminBlogs();
+  } catch (err) {
+    showToast(err.message || 'Failed to post comment.', 'error');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+}
+
+// 3. Admin Share Modal handlers
+let currentShareUrl = '';
+let currentShareTitle = '';
+
+function openAdminShareModal(blogId, blogTitle, blogSlug) {
+  currentShareTitle = blogTitle;
+  currentShareUrl = `${window.location.origin}/blog/${blogSlug}`;
+
+  const modal = document.getElementById('admin-share-modal');
+  const titleEl = document.getElementById('admin-share-modal-title');
+  const inputEl = document.getElementById('admin-share-url-input');
+  const nativeBtn = document.getElementById('btn-native-share');
+
+  if (titleEl) titleEl.textContent = `Share "${blogTitle}"`;
+  if (inputEl) inputEl.value = currentShareUrl;
+  if (nativeBtn && navigator.share) {
+    nativeBtn.style.display = 'inline-flex';
+  }
+
+  if (modal) modal.classList.add('active');
+}
+
+function closeAdminShareModal() {
+  const modal = document.getElementById('admin-share-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+async function copyAdminShareUrl() {
+  const btn = document.getElementById('btn-copy-share-url');
+  const input = document.getElementById('admin-share-url-input');
+
+  let copied = false;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(currentShareUrl);
+      copied = true;
+    } catch (_) {}
+  }
+  if (!copied && input) {
+    input.select();
+    try {
+      document.execCommand('copy');
+      copied = true;
+    } catch (_) {}
+  }
+
+  showToast('Article link copied to clipboard! 📋');
+  if (btn) {
+    const oldText = btn.innerHTML;
+    btn.innerHTML = 'Copied! ✅';
+    setTimeout(() => { btn.innerHTML = oldText; }, 2000);
+  }
+}
+
+function shareToTwitter() {
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(currentShareTitle)}&url=${encodeURIComponent(currentShareUrl)}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function shareToLinkedIn() {
+  const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentShareUrl)}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function shareViaEmail() {
+  const subject = encodeURIComponent(currentShareTitle);
+  const body = encodeURIComponent(`Read this article on ApexBlog: ${currentShareUrl}`);
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+async function triggerNativeShare() {
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: currentShareTitle,
+        url: currentShareUrl
+      });
+    } catch (err) {
+      // User cancelled
+    }
+  }
+}
+

@@ -50,6 +50,14 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
 
+app.get('/write', (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'write.html'));
+});
+
+app.get('/presentation', (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'presentation.html'));
+});
+
 app.get('/blog/:slug', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'blog.html'));
 });

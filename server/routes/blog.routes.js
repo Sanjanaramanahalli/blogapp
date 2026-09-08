@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const blogController = require('../controllers/blog.controller');
 const likeController = require('../controllers/like.controller');
-const { requireAdmin, requireAuth } = require('../middleware/auth');
+const { requireAdmin, requireAuth, requireOwnerOrAdmin } = require('../middleware/auth');
 
 // Public routes
 router.get('/', blogController.getAllBlogs);
@@ -20,10 +20,10 @@ router.post('/:id/like', requireAuth, (req, res, next) => {
   next();
 }, likeController.toggleLike);
 
-// Admin-only management routes
-router.post('/', requireAdmin, blogController.createBlog);
-router.put('/:id', requireAdmin, blogController.updateBlog);
-router.patch('/:id/status', requireAdmin, blogController.togglePublishStatus);
-router.delete('/:id', requireAdmin, blogController.deleteBlog);
+// Publishing & Author/Admin management routes
+router.post('/', requireAuth, blogController.createBlog);
+router.put('/:id', requireOwnerOrAdmin, blogController.updateBlog);
+router.patch('/:id/status', requireOwnerOrAdmin, blogController.togglePublishStatus);
+router.delete('/:id', requireOwnerOrAdmin, blogController.deleteBlog);
 
 module.exports = router;

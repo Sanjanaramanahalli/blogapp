@@ -192,9 +192,13 @@ function updateNavbarAuth() {
   const user = API.getUser();
   const navActions = document.getElementById('nav-actions');
   const adminNavTab = document.getElementById('nav-admin-link');
+  const writeNavTab = document.getElementById('nav-write-link');
 
   if (adminNavTab) {
     adminNavTab.style.display = API.isAdmin() ? 'inline-flex' : 'none';
+  }
+  if (writeNavTab) {
+    writeNavTab.style.display = user ? 'inline-flex' : 'none';
   }
 
   if (!navActions) return;
@@ -209,6 +213,7 @@ function updateNavbarAuth() {
 
     navActions.innerHTML = `
       <button class="theme-toggle" title="Toggle Theme">☀️</button>
+      <a href="/write" class="btn btn-primary btn-sm" id="nav-write-btn" style="display: inline-flex; align-items: center; gap: 0.35rem;">✍️ Write</a>
       <div class="user-menu">
         <div class="user-avatar" title="${escapeHtml(user.name)}">${initials}</div>
         <span class="role-badge role-${user.role}">${user.role}</span>

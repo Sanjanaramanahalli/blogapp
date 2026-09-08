@@ -246,3 +246,62 @@
   font-size: 0.875rem;
   cursor: pointer;
 }
+
+/* Admin Table Interaction Action Buttons */
+.btn-action-like, .btn-action-comment, .btn-action-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.btn-action-like:hover {
+  border-color: #f43f5e;
+  color: #f43f5e;
+  background: rgba(244, 63, 94, 0.08);
+}
+
+.btn-action-like.liked {
+  color: #fff;
+  background: #f43f5e;
+  border-color: #f43f5e;
+}
+
+.btn-action-comment:hover {
+  border-color: var(--accent);
+  color: var(--accent-light);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.btn-action-share:hover {
+  border-color: var(--success);
+  color: var(--success-light);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+/* Admin Comment Modal Stream Items */
+.admin-comment-card {
+  padding: 0.85rem 1rem;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem;
+}
+
+.admin-comment-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.admin-comment-card-body {
+  font-size: 0.925rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
