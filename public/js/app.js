@@ -9,6 +9,7 @@ let currentSearch = '';
 let currentCategory = '';
 let currentTag = '';
 let currentSort = 'newest';
+let currentEdition = 'india';
 let searchTimeout = null;
 
 const categoryLookup = {};
@@ -37,11 +38,16 @@ function readUrlParams() {
 
   const sortSelect = document.getElementById('sort-select');
   if (sortSelect) sortSelect.value = currentSort;
+
+  const editionParam = (params.get('edition') || 'india').toLowerCase();
+  currentEdition = (editionParam === 'world') ? 'world' : 'india';
+  updateEditionUI();
 }
 
 // Synchronize current state with browser history / URL query string
 function syncUrlParams() {
   const params = new URLSearchParams();
+  if (currentEdition && currentEdition !== 'india') params.set('edition', currentEdition);
   if (currentSearch) params.set('search', currentSearch);
   if (currentCategory) params.set('category', currentCategory);
   if (currentTag) params.set('tag', currentTag);
@@ -51,6 +57,42 @@ function syncUrlParams() {
   const queryString = params.toString();
   const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
   window.history.pushState(null, '', newUrl);
+}
+
+function updateEditionUI() {
+  const btnIndia = document.getElementById('edition-india');
+  const btnWorld = document.getElementById('edition-world');
+  if (btnIndia) {
+    btnIndia.classList.toggle('active', currentEdition === 'india');
+    btnIndia.setAttribute('aria-pressed', currentEdition === 'india' ? 'true' : 'false');
+  }
+  if (btnWorld) {
+    btnWorld.classList.toggle('active', currentEdition === 'world');
+    btnWorld.setAttribute('aria-pressed', currentEdition === 'world' ? 'true' : 'false');
+  }
+}
+
+function setupEditionSwitcher() {
+  const btnIndia = document.getElementById('edition-india');
+  const btnWorld = document.getElementById('edition-world');
+
+  btnIndia?.addEventListener('click', () => {
+    if (currentEdition === 'india') return;
+    currentEdition = 'india';
+    updateEditionUI();
+    currentPage = 1;
+    syncUrlParams();
+    loadBlogs();
+  });
+
+  btnWorld?.addEventListener('click', () => {
+    if (currentEdition === 'world') return;
+    currentEdition = 'world';
+    updateEditionUI();
+    currentPage = 1;
+    syncUrlParams();
+    loadBlogs();
+  });
 }
 
 // Load Categories & Tags for the filter bar
@@ -249,6 +291,7 @@ async function loadBlogs() {
       sort: currentSort
     });
 
+    if (currentEdition) params.append('edition', currentEdition);
     if (currentSearch.trim()) params.append('search', currentSearch.trim());
     if (currentCategory) params.append('category', currentCategory);
     if (currentTag) params.append('tag', currentTag);
@@ -309,8 +352,12 @@ async function loadBlogs() {
     grid.innerHTML = blogs.map(blog => {
       const cover = blog.cover_image || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80';
       const readTime = calculateReadingTime(blog.body);
-      const primaryCategory = blog.categories && blog.categories[0] ? blog.categories[0].name : 'Architecture';
+      const primaryCategory = blog.categories && blog.categories[0] ? blog.categories[0].name : 'News';
       const formattedDate = formatRelativeTime(blog.created_at);
+      const editionLabel = (blog.edition === 'world') ? 'WORLD' : 'INDIA';
+      const videoBadge = blog.video_url
+        ? `<span class="video-badge" title="Article contains video clip">▶ Video</span>`
+        : '';
 
       const tagsHtml = (blog.tags || []).length > 0
         ? `<div class="blog-card-tags">
@@ -320,11 +367,18 @@ async function loadBlogs() {
 
       return `
         <article class="blog-card" id="blog-${blog.id}">
-          <div class="blog-card-media">
+          <div class="blog-card-media" style="position: relative;">
             <img src="${escapeHtml(cover)}" alt="${escapeHtml(blog.title)}" class="blog-card-img" loading="lazy">
+            ${blog.video_url ? `
+              <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); pointer-events: none;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(239, 68, 68, 0.9); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">▶</div>
+              </div>
+            ` : ''}
           </div>
           <div class="blog-card-content">
             <div class="blog-card-meta">
+              <span class="edition-tag">${escapeHtml(editionLabel)}</span>
+              ${videoBadge}
               <span class="blog-card-category">${escapeHtml(primaryCategory)}</span>
               <span>•</span>
               <span>${readTime}</span>
@@ -526,4 +580,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       searchInput?.select();
     }
   });
+
+  // Setup edition switcher buttons
+  setupEditionSwitcher();
 });

@@ -187,6 +187,27 @@
     <!-- Meta Settings Section -->
     <div class="meta-box">
       <div class="meta-grid">
+        <!-- Edition Selection -->
+        <div>
+          <label class="form-label" for="blog-edition" style="font-weight: 600;">News Edition *</label>
+          <select id="blog-edition" class="form-control" style="background: var(--bg-surface-elevated); color: var(--text-primary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.65rem 1rem; width: 100%;">
+            <option value="india" selected>🇮🇳 INDIA Edition (Local & National)</option>
+            <option value="world">🌐 WORLD Edition (International)</option>
+          </select>
+          <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+            Target regional Indian news or global international coverage
+          </small>
+        </div>
+
+        <!-- Video URL Input -->
+        <div>
+          <label class="form-label" for="blog-video-url" style="font-weight: 600;">Video URL (Optional)</label>
+          <input type="url" id="blog-video-url" class="form-control" placeholder="https://example.com/video.mp4">
+          <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+            Embed high-resolution video stream or MP4 broadcast footage
+          </small>
+        </div>
+
         <!-- Categories Selection -->
         <div>
           <label class="form-label" style="font-weight: 600;">Categories (Select all that apply)</label>
@@ -198,7 +219,7 @@
         <!-- Tags Input -->
         <div>
           <label class="form-label" for="tags-input" style="font-weight: 600;">Tags (Comma-separated)</label>
-          <input type="text" id="tags-input" class="form-control" placeholder="e.g. javascript, nodejs, database">
+          <input type="text" id="tags-input" class="form-control" placeholder="e.g. sports, movies, weather, breaking">
           <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
             Add keywords to help readers discover your post
           </small>

@@ -383,9 +383,20 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000).unref();
 
-// Google OAuth: 1. Initiation
-function googleAuthInit(req, res) {
+const SUPPORTED_PROVIDERS = ['google', 'linkedin', 'github'];
+
+function getProvider(req) {
+  const p = (req.params?.provider || req.body?.provider || 'google').toLowerCase();
+  return SUPPORTED_PROVIDERS.includes(p) ? p : null;
+}
+
+// Multi-Provider Social OAuth: 1. Initiation
+function socialAuthInit(req, res) {
   try {
+    const provider = getProvider(req);
+    if (!provider) {
+      return res.redirect('/login?error=invalid_provider');
+    }
     const state = crypto.randomBytes(24).toString('hex');
     res.cookie('oauth_state', state, {
       httpOnly: true,
@@ -393,36 +404,58 @@ function googleAuthInit(req, res) {
       sameSite: 'lax',
       maxAge: 15 * 60 * 1000
     });
+    res.cookie('oauth_provider', provider, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000
+    });
 
-    const isLiveConfigured = process.env.GOOGLE_CLIENT_ID && 
-                             process.env.GOOGLE_CLIENT_SECRET && 
-                             process.env.GOOGLE_AUTH_MOCK !== 'true';
+    const envPrefix = provider.toUpperCase();
+    const isLiveConfigured = process.env[`${envPrefix}_CLIENT_ID`] && 
+                             process.env[`${envPrefix}_CLIENT_SECRET`] && 
+                             process.env[`${envPrefix}_AUTH_MOCK`] !== 'true';
 
     if (isLiveConfigured) {
       const host = req.get('host');
       const protocol = req.protocol;
-      const callbackUrl = `${protocol}://${host}/auth/google/callback`;
-      const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(process.env.GOOGLE_CLIENT_ID)}&redirect_uri=${encodeURIComponent(callbackUrl)}&response_type=code&scope=${encodeURIComponent('openid email profile')}&state=${state}&prompt=select_account`;
-      return res.redirect(googleAuthUrl);
+      const callbackUrl = `${protocol}://${host}/auth/${provider}/callback`;
+      if (provider === 'google') {
+        const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(process.env.GOOGLE_CLIENT_ID)}&redirect_uri=${encodeURIComponent(callbackUrl)}&response_type=code&scope=${encodeURIComponent('openid email profile')}&state=${state}&prompt=select_account`;
+        return res.redirect(googleAuthUrl);
+      } else if (provider === 'linkedin') {
+        const linkedInUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${encodeURIComponent(process.env.LINKEDIN_CLIENT_ID)}&redirect_uri=${encodeURIComponent(callbackUrl)}&state=${state}&scope=openid%20profile%20email`;
+        return res.redirect(linkedInUrl);
+      } else if (provider === 'github') {
+        const githubUrl = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(process.env.GITHUB_CLIENT_ID)}&redirect_uri=${encodeURIComponent(callbackUrl)}&state=${state}&scope=user:email`;
+        return res.redirect(githubUrl);
+      }
     }
 
-    // Redirect to the interactive Google Authentication Screen
-    return res.redirect(`/auth/google/screen?state=${state}`);
+    // Redirect to the interactive Sandbox Authentication Screen
+    return res.redirect(`/auth/${provider}/screen?state=${state}`);
   } catch (err) {
-    console.error('Google Auth Init Error:', err);
+    console.error(`[AUTH] Social Auth Init Error (${req.params?.provider}):`, err);
     res.redirect('/login?error=init_failed');
   }
 }
 
-// Google OAuth: 2. Render Authentication Screen (for sandbox / testing)
-function renderGoogleAuthScreen(req, res) {
-  const googleHtmlPath = path.join(__dirname, '..', '..', 'public', 'google-auth.html');
-  res.sendFile(googleHtmlPath);
+// Multi-Provider Social OAuth: 2. Render Screen
+function renderSocialAuthScreen(req, res) {
+  const provider = getProvider(req);
+  if (!provider) {
+    return res.redirect('/login?error=invalid_provider');
+  }
+  if (provider === 'google') {
+    return res.sendFile(path.join(__dirname, '..', '..', 'public', 'google-auth.html'));
+  }
+  return res.sendFile(path.join(__dirname, '..', '..', 'public', 'social-auth.html'));
 }
 
-// Google OAuth: 3. Verify Mock/Sandbox Credentials & Issue Auth Code
-function googleMockAuthenticate(req, res) {
+// Multi-Provider Social OAuth: 3. Verify Mock/Sandbox Credentials & Issue Auth Code
+function socialMockAuthenticate(req, res) {
   try {
+    const provider = getProvider(req) || 'google';
     const { email, password, state, action } = req.body || {};
 
     // Handle user cancellation
@@ -433,11 +466,12 @@ function googleMockAuthenticate(req, res) {
       });
     }
 
-    // Validate account presence and validity
+    // Validate account presence
     if (!email || !email.trim()) {
-      return res.status(400).json({
-        error: 'Enter an email or phone number.'
-      });
+      let emptyMsg = 'Enter an email or phone number.';
+      if (provider === 'linkedin') emptyMsg = 'Please enter your email or phone number.';
+      if (provider === 'github') emptyMsg = 'Username or email address cannot be empty.';
+      return res.status(400).json({ error: emptyMsg });
     }
 
     const trimmedEmail = email.trim();
@@ -447,9 +481,10 @@ function googleMockAuthenticate(req, res) {
                            trimmedEmail.toLowerCase().includes('unknown');
 
     if (!isEmailValid || isKnownInvalid) {
-      return res.status(400).json({
-        error: "Couldn't find your Google Account. Please enter a valid Google account."
-      });
+      let notFoundMsg = "Couldn't find your Google Account. Please enter a valid Google account.";
+      if (provider === 'linkedin') notFoundMsg = "Couldn't find a LinkedIn account associated with this email.";
+      if (provider === 'github') notFoundMsg = "Incorrect username or password. Couldn't find your GitHub account.";
+      return res.status(400).json({ error: notFoundMsg });
     }
 
     // Validate password correctness
@@ -461,37 +496,44 @@ function googleMockAuthenticate(req, res) {
                                 password.length < 6;
 
     if (isIncorrectPassword) {
-      return res.status(401).json({
-        error: 'Wrong password. Try again or click Forgot password to reset it.'
-      });
+      let wrongPassMsg = 'Wrong password. Try again or click Forgot password to reset it.';
+      if (provider === 'linkedin') wrongPassMsg = "That's not the right password. Try again.";
+      if (provider === 'github') wrongPassMsg = 'Incorrect username or password.';
+      return res.status(401).json({ error: wrongPassMsg });
     }
 
-    // Issue mock authorization code tied to user Google profile
-    const authCode = 'google_code_' + crypto.randomBytes(16).toString('hex');
+    // Issue mock authorization code tied to user profile
+    const authCode = `${provider}_code_` + crypto.randomBytes(16).toString('hex');
     const normalizedEmail = trimmedEmail.toLowerCase();
     const namePart = normalizedEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+    let avatarBg = '4285F4';
+    if (provider === 'linkedin') avatarBg = '0A66C2';
+    if (provider === 'github') avatarBg = '24292E';
+
     mockOAuthSessions.set(authCode, {
-      google_id: 'gid_' + crypto.createHash('sha256').update(normalizedEmail).digest('hex').substring(0, 20),
+      provider,
+      provider_id: `${provider.substring(0, 3)}_` + crypto.createHash('sha256').update(normalizedEmail).digest('hex').substring(0, 20),
       email: normalizedEmail,
       name: namePart,
-      avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(namePart)}&background=4285F4&color=ffffff`,
+      avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(namePart)}&background=${avatarBg}&color=ffffff`,
       expiresAt: Date.now() + 5 * 60 * 1000
     });
 
     return res.status(200).json({
       success: true,
-      redirectUrl: `/auth/google/callback?code=${authCode}&state=${encodeURIComponent(state || '')}`
+      redirectUrl: `/auth/${provider}/callback?code=${authCode}&state=${encodeURIComponent(state || '')}`
     });
   } catch (err) {
-    console.error('Google Mock Authenticate error:', err);
+    console.error(`[AUTH] ${req.params?.provider || 'social'} Mock Authenticate error:`, err);
     res.status(500).json({ error: 'Internal authentication error.' });
   }
 }
 
-// Google OAuth: 4. Callback Handler
-async function googleAuthCallback(req, res) {
+// Multi-Provider Social OAuth: 4. Callback Handler
+async function socialAuthCallback(req, res) {
   try {
+    const provider = getProvider(req) || 'google';
     const { code, state, error } = req.query;
 
     if (error) {
@@ -506,52 +548,74 @@ async function googleAuthCallback(req, res) {
     // State verification against cookie
     const cookieState = req.cookies?.oauth_state;
     if (cookieState && state && cookieState !== state) {
-      console.warn('[AUTH] Google OAuth state mismatch');
+      console.warn(`[AUTH] ${provider} OAuth state mismatch`);
       return res.redirect('/login?error=state_mismatch');
     }
 
     let profile = null;
+    const envPrefix = provider.toUpperCase();
+    const isLiveConfigured = process.env[`${envPrefix}_CLIENT_ID`] && 
+                             process.env[`${envPrefix}_CLIENT_SECRET`] && 
+                             process.env[`${envPrefix}_AUTH_MOCK`] !== 'true';
 
-    const isLiveConfigured = process.env.GOOGLE_CLIENT_ID && 
-                             process.env.GOOGLE_CLIENT_SECRET && 
-                             process.env.GOOGLE_AUTH_MOCK !== 'true';
-
-    if (isLiveConfigured && !code.startsWith('google_code_')) {
+    if (isLiveConfigured && !code.startsWith(`${provider}_code_`)) {
       try {
         const host = req.get('host');
         const protocol = req.protocol;
-        const redirectUri = `${protocol}://${host}/auth/google/callback`;
+        const redirectUri = `${protocol}://${host}/auth/${provider}/callback`;
 
-        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            code,
-            client_id: process.env.GOOGLE_CLIENT_ID,
-            client_secret: process.env.GOOGLE_CLIENT_SECRET,
-            redirect_uri: redirectUri,
-            grant_type: 'authorization_code'
-          })
-        });
-
-        const tokenData = await tokenRes.json();
-        if (!tokenRes.ok || !tokenData.access_token) {
-          throw new Error(tokenData.error_description || 'Failed to exchange token with Google');
+        if (provider === 'google') {
+          const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              code,
+              client_id: process.env.GOOGLE_CLIENT_ID,
+              client_secret: process.env.GOOGLE_CLIENT_SECRET,
+              redirect_uri: redirectUri,
+              grant_type: 'authorization_code'
+            })
+          });
+          const tokenData = await tokenRes.json();
+          if (!tokenRes.ok || !tokenData.access_token) {
+            throw new Error(tokenData.error_description || 'Failed to exchange token with Google');
+          }
+          const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${tokenData.access_token}` }
+          });
+          const userData = await userRes.json();
+          profile = {
+            provider_id: userData.sub,
+            email: userData.email.toLowerCase(),
+            name: userData.name || userData.given_name || 'Google User',
+            avatar_url: userData.picture || null
+          };
+        } else if (provider === 'github') {
+          const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              client_id: process.env.GITHUB_CLIENT_ID,
+              client_secret: process.env.GITHUB_CLIENT_SECRET,
+              code,
+              redirect_uri: redirectUri
+            })
+          });
+          const tokenData = await tokenRes.json();
+          const userRes = await fetch('https://api.github.com/user', {
+            headers: { Authorization: `Bearer ${tokenData.access_token}`, 'User-Agent': 'ApexBlog-App' }
+          });
+          const userData = await userRes.json();
+          profile = {
+            provider_id: String(userData.id),
+            email: (userData.email || `${userData.login}@users.noreply.github.com`).toLowerCase(),
+            name: userData.name || userData.login || 'GitHub User',
+            avatar_url: userData.avatar_url || null
+          };
         }
-
-        const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenData.access_token}` }
-        });
-        const userData = await userRes.json();
-        profile = {
-          google_id: userData.sub,
-          email: userData.email.toLowerCase(),
-          name: userData.name || userData.given_name || 'Google User',
-          avatar_url: userData.picture || null
-        };
       } catch (liveErr) {
-        console.error('[AUTH] Live Google OAuth exchange error:', liveErr);
-        return res.redirect('/login?error=google_exchange_failed');
+        console.error(`[AUTH] Live ${provider} OAuth exchange error:`, liveErr);
+        return res.redirect(`/login?error=${provider}_exchange_failed`);
       }
     } else {
       const session = mockOAuthSessions.get(code);
@@ -567,28 +631,34 @@ async function googleAuthCallback(req, res) {
       return res.redirect('/login?error=invalid_profile');
     }
 
-    // Synchronize or create user in SQLite database
-    let user = db.prepare('SELECT * FROM users WHERE google_id = ?').get(profile.google_id);
+    // Account deduplication & linking
+    const providerIdCol = provider === 'linkedin' ? 'linkedin_id' : provider === 'github' ? 'github_id' : 'google_id';
+
+    let user = db.prepare(`SELECT * FROM users WHERE ${providerIdCol} = ?`).get(profile.provider_id);
 
     if (!user) {
+      // Deduplication: Check if account exists with this email address
       user = db.prepare('SELECT * FROM users WHERE email = ?').get(profile.email);
       if (user) {
-        db.prepare('UPDATE users SET google_id = ?, auth_provider = ?, avatar_url = COALESCE(avatar_url, ?) WHERE id = ?')
-          .run(profile.google_id, 'google', profile.avatar_url || null, user.id);
+        // Link provider ID to existing account while strictly preserving existing user.role (admin/reader)
+        db.prepare(`UPDATE users SET ${providerIdCol} = ?, auth_provider = ?, avatar_url = COALESCE(avatar_url, ?) WHERE id = ?`)
+          .run(profile.provider_id, provider, profile.avatar_url || null, user.id);
         user = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id);
       } else {
+        // First-time social signup -> create account with 'reader' role
         const dummyPasswordHash = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 10);
-        const info = db.prepare(`
-          INSERT INTO users (name, email, password_hash, role, google_id, avatar_url, auth_provider)
-          VALUES (?, ?, ?, 'reader', ?, ?, 'google')
+        const insertInfo = db.prepare(`
+          INSERT INTO users (name, email, password_hash, role, ${providerIdCol}, avatar_url, auth_provider)
+          VALUES (?, ?, ?, 'reader', ?, ?, ?)
         `).run(
-          profile.name || 'Google User',
+          profile.name || `${provider} User`,
           profile.email,
           dummyPasswordHash,
-          profile.google_id,
-          profile.avatar_url || null
+          profile.provider_id,
+          profile.avatar_url || null,
+          provider
         );
-        user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+        user = db.prepare('SELECT * FROM users WHERE id = ?').get(insertInfo.lastInsertRowid);
       }
     }
 
@@ -603,15 +673,22 @@ async function googleAuthCallback(req, res) {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
     res.clearCookie('oauth_state');
+    res.clearCookie('oauth_provider');
 
-    console.log(`[AUTH] Google authentication successful for ${user.email} (ID: ${user.id})`);
+    console.log(`[AUTH] ${provider} authentication successful for ${user.email} (ID: ${user.id})`);
 
-    return res.redirect(`/?token=${encodeURIComponent(token)}&login=google_success`);
+    return res.redirect(`/?token=${encodeURIComponent(token)}&login=${provider}_success`);
   } catch (err) {
-    console.error('Google Auth Callback Error:', err);
+    console.error(`[AUTH] ${req.params?.provider || 'social'} Auth Callback Error:`, err);
     res.redirect('/login?error=callback_error');
   }
 }
+
+// Backward compatibility wrappers for Google OAuth
+const googleAuthInit = (req, res) => { req.params.provider = 'google'; return socialAuthInit(req, res); };
+const renderGoogleAuthScreen = (req, res) => { req.params.provider = 'google'; return renderSocialAuthScreen(req, res); };
+const googleMockAuthenticate = (req, res) => { req.params.provider = 'google'; return socialMockAuthenticate(req, res); };
+const googleAuthCallback = (req, res) => { req.params.provider = 'google'; return socialAuthCallback(req, res); };
 
 module.exports = {
   register,
@@ -622,8 +699,13 @@ module.exports = {
   forgotPassword,
   verifyOtp,
   resetPassword,
+  socialAuthInit,
+  renderSocialAuthScreen,
+  socialMockAuthenticate,
+  socialAuthCallback,
   googleAuthInit,
   renderGoogleAuthScreen,
   googleMockAuthenticate,
   googleAuthCallback
 };
+

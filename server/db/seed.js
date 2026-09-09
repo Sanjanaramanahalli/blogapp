@@ -44,11 +44,17 @@ function seedDatabase() {
   insertCatStmt.run('Web Development', 'web-development');
   insertCatStmt.run('Design', 'design');
   insertCatStmt.run('Engineering', 'engineering');
+  insertCatStmt.run('Sports', 'sports');
+  insertCatStmt.run('Movies', 'movies');
+  insertCatStmt.run('Weather', 'weather');
 
   const catTech = db.prepare('SELECT id FROM categories WHERE slug = ?').get('technology');
   const catArch = db.prepare('SELECT id FROM categories WHERE slug = ?').get('software-architecture');
   const catWeb = db.prepare('SELECT id FROM categories WHERE slug = ?').get('web-development');
   const catEng = db.prepare('SELECT id FROM categories WHERE slug = ?').get('engineering');
+  const catSports = db.prepare('SELECT id FROM categories WHERE slug = ?').get('sports');
+  const catMovies = db.prepare('SELECT id FROM categories WHERE slug = ?').get('movies');
+  const catWeather = db.prepare('SELECT id FROM categories WHERE slug = ?').get('weather');
 
   // 4. Seed Tags
   const insertTagStmt = db.prepare('INSERT INTO tags (name, slug) VALUES (?, ?)');
@@ -58,49 +64,53 @@ function seedDatabase() {
   insertTagStmt.run('security', 'security');
   insertTagStmt.run('architecture', 'architecture');
   insertTagStmt.run('css', 'css');
+  insertTagStmt.run('india', 'india');
+  insertTagStmt.run('world', 'world');
+  insertTagStmt.run('video', 'video');
 
   const tagNode = db.prepare('SELECT id FROM tags WHERE slug = ?').get('nodejs');
   const tagSqlite = db.prepare('SELECT id FROM tags WHERE slug = ?').get('sqlite');
   const tagArch = db.prepare('SELECT id FROM tags WHERE slug = ?').get('architecture');
   const tagSec = db.prepare('SELECT id FROM tags WHERE slug = ?').get('security');
   const tagJs = db.prepare('SELECT id FROM tags WHERE slug = ?').get('javascript');
+  const tagIndia = db.prepare('SELECT id FROM tags WHERE slug = ?').get('india');
+  const tagWorld = db.prepare('SELECT id FROM tags WHERE slug = ?').get('world');
+  const tagVideo = db.prepare('SELECT id FROM tags WHERE slug = ?').get('video');
 
   // 5. Seed Blogs
   const insertBlogStmt = db.prepare(`
-    INSERT INTO blogs (title, slug, body, cover_image, status, author_id)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO blogs (title, slug, body, cover_image, status, author_id, edition, video_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  // Blog 1: Published
+  // Blog 1: Published (India)
   insertBlogStmt.run(
     'Architecting Modern Web Applications with Resilient Full-Stack Patterns',
     'architecting-modern-web-applications',
     `<h2>Building for Long-Term Durability</h2>
     <p>In modern software engineering, web application longevity is determined by architectural discipline rather than the latest fleeting trends. By leveraging clean separation of concerns, transactional integrity, and role-based boundaries, teams deliver software that survives decades of evolution.</p>
-    <blockquote>The essence of architecture is finding simplicity in complex distributed interactions.</blockquote>
-    <h3>1. Relational Integrity at the Core</h3>
-    <p>Using strict foreign key constraints and cascade rules guarantees that your application state remains perpetually consistent. When a parent post or comment is deleted, recursive child dependencies are removed atomically without orphan records polluting storage.</p>
-    <h3>2. Security & Role Governance</h3>
-    <p>Distinguishing between authenticated Readers and administrative personnel ensures that content moderation, account management, and authoring capabilities remain strictly isolated.</p>`,
+    <blockquote>The essence of architecture is finding simplicity in complex distributed interactions.</blockquote>`,
     'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80',
     'published',
-    adminUser.id
+    adminUser.id,
+    'india',
+    null
   );
 
-  // Blog 2: Published
+  // Blog 2: Published (India)
   insertBlogStmt.run(
     'Deep Dive into Multi-Level Comment Hierarchies and Cascade Deletions',
     'deep-dive-into-multi-level-comment-hierarchies',
     `<h2>Understanding Threaded Community Conversations</h2>
-    <p>Linear comment lists fail to capture the nuance of collaborative human conversation. By structuring discussions into hierarchical parent-child relationships, readers can engage in specific contextual replies without losing track of the surrounding dialogue.</p>
-    <h3>Cascade Deletion Dynamics</h3>
-    <p>When an author or administrator removes a root comment, all subsidiary replies down the tree are purged instantaneously. This prevents conversational dead-ends and maintains structural hygiene.</p>`,
+    <p>Linear comment lists fail to capture the nuance of collaborative human conversation. By structuring discussions into hierarchical parent-child relationships, readers can engage in specific contextual replies without losing track of the surrounding dialogue.</p>`,
     'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80',
     'published',
-    adminUser.id
+    adminUser.id,
+    'india',
+    null
   );
 
-  // Blog 3: Draft (Only visible to Admin)
+  // Blog 3: Draft (World)
   insertBlogStmt.run(
     'Internal Roadmap: Platform Architecture Vision for 2027',
     'internal-roadmap-platform-vision',
@@ -108,10 +118,12 @@ function seedDatabase() {
     <p>This draft documents upcoming architectural milestones, automated regression suites, and infrastructure optimizations currently under review by engineering leadership.</p>`,
     'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80',
     'draft',
-    adminUser.id
+    adminUser.id,
+    'world',
+    null
   );
 
-  // Blog 4: Published
+  // Blog 4: Published (India)
   insertBlogStmt.run(
     'Mastering SQLite WAL Mode for High Concurrency Web Backends',
     'mastering-sqlite-wal-mode',
@@ -119,10 +131,12 @@ function seedDatabase() {
     <p>Write-Ahead Logging (WAL) completely decouples readers from writers in SQLite. Readers never block writers, and writers never block readers, achieving exceptional read performance on modern hardware.</p>`,
     'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1200&q=80',
     'published',
-    johnUser.id
+    johnUser.id,
+    'india',
+    null
   );
 
-  // Blog 5: Published
+  // Blog 5: Published (India)
   insertBlogStmt.run(
     'Modern Frontend Aesthetics: Glassmorphism and Fluid Responsive Layouts',
     'modern-frontend-aesthetics-glassmorphism',
@@ -130,10 +144,12 @@ function seedDatabase() {
     <p>Modern web users expect interfaces that feel alive, responsive, and tactile. By pairing subtle backdrop blurs with tailored HSL color tokens and clamp() fluid typography, applications stand out with premium visual quality.</p>`,
     'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80',
     'published',
-    sarahUser.id
+    sarahUser.id,
+    'india',
+    null
   );
 
-  // Blog 6: Published
+  // Blog 6: Published (World)
   insertBlogStmt.run(
     'Building Resilient Microservices with Event-Driven Architecture',
     'building-resilient-microservices',
@@ -141,10 +157,12 @@ function seedDatabase() {
     <p>Event streams provide a resilient backbone for asynchronous communication across microservices. By ensuring idempotency and replayability, systems remain robust in the face of partial network failures.</p>`,
     'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
     'published',
-    adminUser.id
+    adminUser.id,
+    'world',
+    null
   );
 
-  // Blog 7: Published
+  // Blog 7: Published (India)
   insertBlogStmt.run(
     'Defensive API Design: Input Sanitization, CSRF, and RBAC',
     'defensive-api-design-security',
@@ -152,10 +170,12 @@ function seedDatabase() {
     <p>Security must be embedded into every route, handler, and database query. By sanitizing rich-text inputs and enforcing role-based access control, applications neutralize injection attacks and unauthorized mutations.</p>`,
     'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80',
     'published',
-    johnUser.id
+    johnUser.id,
+    'india',
+    null
   );
 
-  // Blog 8: Published
+  // Blog 8: Published (World)
   insertBlogStmt.run(
     'The Evolution of Design Systems: Tokens, Dark Mode, and Micro-Animations',
     'evolution-of-design-systems',
@@ -163,7 +183,87 @@ function seedDatabase() {
     <p>A design system is more than a style guide; it is a shared vocabulary between designers and engineers. Semantic CSS custom properties enable seamless dark/light transitions with zero runtime bundle overhead.</p>`,
     'https://images.unsplash.com/photo-1522542550221-31fd19575a2d?auto=format&fit=crop&w=1200&q=80',
     'published',
-    sarahUser.id
+    sarahUser.id,
+    'world',
+    null
+  );
+
+  // Blog 9: India Edition - Sports (with video)
+  insertBlogStmt.run(
+    'India National Cricket Team Clinches Championship Victory',
+    'india-cricket-championship-victory',
+    `<h2>Historic Triumph for the Men in Blue</h2>
+    <p>In a thrilling final watched by millions across the nation, India delivered a masterclass performance in bowling and batting to secure the championship trophy.</p>`,
+    'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=1200&q=80',
+    'published',
+    adminUser.id,
+    'india',
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+  );
+
+  // Blog 10: India Edition - Movies (with video)
+  insertBlogStmt.run(
+    'Indian Cinema Sensation Breaks International Box Office Records',
+    'indian-cinema-box-office-records',
+    `<h2>Pan-Indian Storytelling Conquers Global Screens</h2>
+    <p>Captivating audiences with spectacular visuals and heartfelt music, the latest Indian cinematic blockbuster has surpassed all previous box office milestones worldwide.</p>`,
+    'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=80',
+    'published',
+    sarahUser.id,
+    'india',
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'
+  );
+
+  // Blog 11: India Edition - Weather
+  insertBlogStmt.run(
+    'Monsoon Forecast: Heavy Rainfall Alert Across Western Coastal India',
+    'monsoon-forecast-western-coastal-india',
+    `<h2>Meteorological Advisory for Coastal Communities</h2>
+    <p>The India Meteorological Department has issued active alerts for continuous monsoon showers, advising local fishermen and travelers to exercise caution.</p>`,
+    'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1200&q=80',
+    'published',
+    johnUser.id,
+    'india',
+    null
+  );
+
+  // Blog 12: World Edition - Sports (with video)
+  insertBlogStmt.run(
+    'World Athletics Championships: Historic Global Records Broken',
+    'world-athletics-championships-records',
+    `<h2>Athletes from 40 Nations Compete at Peak Form</h2>
+    <p>The international stadium witnessed unprecedented speed and endurance as sprinters shattered decade-old global records in thrilling photo-finishes.</p>`,
+    'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80',
+    'published',
+    adminUser.id,
+    'world',
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
+  );
+
+  // Blog 13: World Edition - Movies
+  insertBlogStmt.run(
+    'International Film Festival Celebrates Cinematic Masterpieces',
+    'international-film-festival-masterpieces',
+    `<h2>Independent Directors Honored on the World Stage</h2>
+    <p>Celebrating diverse voices and innovative filmmaking, the festival jury awarded the Golden Palme to an inspiring documentary highlighting resilience.</p>`,
+    'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1200&q=80',
+    'published',
+    sarahUser.id,
+    'world',
+    null
+  );
+
+  // Blog 14: World Edition - Weather (with video)
+  insertBlogStmt.run(
+    'Global Climate Summit Issues Worldwide Extreme Heat Advisory',
+    'global-climate-summit-extreme-heat-advisory',
+    `<h2>Coordinated Global Preparedness Plans</h2>
+    <p>International climate scientists and municipal authorities have coordinated emergency heat preparedness guides to support vulnerable populations across three continents.</p>`,
+    'https://images.unsplash.com/photo-1504370805625-d32c54b16100?auto=format&fit=crop&w=1200&q=80',
+    'published',
+    johnUser.id,
+    'world',
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
   );
 
   const blog1 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('architecting-modern-web-applications');
@@ -174,6 +274,12 @@ function seedDatabase() {
   const blog6 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('building-resilient-microservices');
   const blog7 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('defensive-api-design-security');
   const blog8 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('evolution-of-design-systems');
+  const blog9 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('india-cricket-championship-victory');
+  const blog10 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('indian-cinema-box-office-records');
+  const blog11 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('monsoon-forecast-western-coastal-india');
+  const blog12 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('world-athletics-championships-records');
+  const blog13 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('international-film-festival-masterpieces');
+  const blog14 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('global-climate-summit-extreme-heat-advisory');
 
   // Assign Categories & Tags
   const insertBlogCat = db.prepare('INSERT INTO blog_categories (blog_id, category_id) VALUES (?, ?)');
@@ -187,6 +293,12 @@ function seedDatabase() {
   insertBlogCat.run(blog6.id, catArch.id);
   insertBlogCat.run(blog7.id, catTech.id);
   insertBlogCat.run(blog8.id, catWeb.id);
+  insertBlogCat.run(blog9.id, catSports.id);
+  insertBlogCat.run(blog10.id, catMovies.id);
+  insertBlogCat.run(blog11.id, catWeather.id);
+  insertBlogCat.run(blog12.id, catSports.id);
+  insertBlogCat.run(blog13.id, catMovies.id);
+  insertBlogCat.run(blog14.id, catWeather.id);
 
   const insertBlogTag = db.prepare('INSERT INTO blog_tags (blog_id, tag_id) VALUES (?, ?)');
   insertBlogTag.run(blog1.id, tagNode.id);
@@ -199,6 +311,16 @@ function seedDatabase() {
   insertBlogTag.run(blog6.id, tagNode.id);
   insertBlogTag.run(blog7.id, tagSec.id);
   insertBlogTag.run(blog8.id, tagJs.id);
+  insertBlogTag.run(blog9.id, tagIndia.id);
+  insertBlogTag.run(blog9.id, tagVideo.id);
+  insertBlogTag.run(blog10.id, tagIndia.id);
+  insertBlogTag.run(blog10.id, tagVideo.id);
+  insertBlogTag.run(blog11.id, tagIndia.id);
+  insertBlogTag.run(blog12.id, tagWorld.id);
+  insertBlogTag.run(blog12.id, tagVideo.id);
+  insertBlogTag.run(blog13.id, tagWorld.id);
+  insertBlogTag.run(blog14.id, tagWorld.id);
+  insertBlogTag.run(blog14.id, tagVideo.id);
 
   // 6. Seed Multi-Level Comments
   const insertCommentStmt = db.prepare(`

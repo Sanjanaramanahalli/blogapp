@@ -169,13 +169,20 @@ async function submitArticle(status = 'published') {
     return;
   }
 
+  const editionSelect = document.getElementById('blog-edition');
+  const edition = editionSelect ? editionSelect.value : 'india';
+  const videoUrlInput = document.getElementById('blog-video-url');
+  const video_url = videoUrlInput && videoUrlInput.value.trim() ? videoUrlInput.value.trim() : null;
+
   const payload = {
     title,
     body,
     cover_image: uploadedCoverUrl || null,
     status,
     categories,
-    tags
+    tags,
+    edition,
+    video_url
   };
 
   const publishBtn = document.getElementById('btn-publish');

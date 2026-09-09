@@ -21,7 +21,7 @@ function authenticate(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, name, email, role, created_at FROM users WHERE id = ?').get(decoded.id);
+    const user = db.prepare('SELECT id, name, email, role, avatar_url, auth_provider, google_id, linkedin_id, github_id, created_at FROM users WHERE id = ?').get(decoded.id);
     req.user = user || null;
   } catch (err) {
     req.user = null;

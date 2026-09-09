@@ -126,6 +126,7 @@ function getAllBlogs(req, res) {
       category,
       tag,
       status,
+      edition,
       page = 1,
       limit = 6,
       sort = 'newest'
@@ -145,6 +146,12 @@ function getAllBlogs(req, res) {
     } else if (status) {
       conditions.push('b.status = ?');
       params.push(status);
+    }
+
+    // Edition Filtering ('india' | 'world')
+    if (edition && (edition.toLowerCase() === 'india' || edition.toLowerCase() === 'world')) {
+      conditions.push('b.edition = ?');
+      params.push(edition.toLowerCase());
     }
 
     // Keyword Search (in title or body)
@@ -197,7 +204,7 @@ function getAllBlogs(req, res) {
     const dataSql = `
       SELECT 
         b.id, b.title, b.slug, b.body, b.cover_image, b.status, 
-        b.created_at, b.updated_at, b.author_id,
+        b.created_at, b.updated_at, b.author_id, b.edition, b.video_url,
         u.name as author_name, u.email as author_email,
         (SELECT COUNT(*) FROM likes l WHERE l.blog_id = b.id) as like_count
       FROM blogs b
@@ -261,7 +268,16 @@ function getBlogBySlugOrId(req, res) {
 // POST /api/blogs (Create blog - Admin only)
 function createBlog(req, res) {
   try {
-    const { title, body, cover_image, status = 'draft', categories = [], tags = [] } = req.body;
+    const { 
+      title, 
+      body, 
+      cover_image, 
+      status = 'draft', 
+      categories = [], 
+      tags = [], 
+      edition = 'india', 
+      video_url = null 
+    } = req.body;
 
     if (!title || !title.trim()) {
       return res.status(400).json({ error: 'Blog title is required.' });
@@ -283,17 +299,21 @@ function createBlog(req, res) {
 
     const sanitizedBody = cleanHtml(body);
     const validStatus = status === 'published' ? 'published' : 'draft';
+    const validEdition = (edition && edition.toLowerCase() === 'world') ? 'world' : 'india';
+    const cleanVideoUrl = (video_url && typeof video_url === 'string' && video_url.trim()) ? video_url.trim() : null;
 
     const insertResult = db.prepare(`
-      INSERT INTO blogs (title, slug, body, cover_image, status, author_id)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO blogs (title, slug, body, cover_image, status, author_id, edition, video_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       title.trim(),
       slug,
       sanitizedBody,
       cover_image || null,
       validStatus,
-      req.user.id
+      req.user.id,
+      validEdition,
+      cleanVideoUrl
     );
 
     const blogId = insertResult.lastInsertRowid;
@@ -363,7 +383,7 @@ function createBlog(req, res) {
 function updateBlog(req, res) {
   try {
     const { id } = req.params;
-    const { title, body, cover_image, status, categories, tags } = req.body;
+    const { title, body, cover_image, status, categories, tags, edition, video_url } = req.body;
 
     const existing = db.prepare('SELECT * FROM blogs WHERE id = ?').get(id);
     if (!existing) {
@@ -375,6 +395,8 @@ function updateBlog(req, res) {
     let updatedBody = existing.body;
     let updatedCover = existing.cover_image;
     let updatedStatus = existing.status;
+    let updatedEdition = existing.edition || 'india';
+    let updatedVideoUrl = existing.video_url || null;
 
     if (title && title.trim() && title.trim() !== existing.title) {
       updatedTitle = title.trim();
@@ -403,11 +425,19 @@ function updateBlog(req, res) {
       updatedStatus = status;
     }
 
+    if (edition !== undefined) {
+      updatedEdition = (edition && edition.toLowerCase() === 'world') ? 'world' : 'india';
+    }
+
+    if (video_url !== undefined) {
+      updatedVideoUrl = (video_url && typeof video_url === 'string' && video_url.trim()) ? video_url.trim() : null;
+    }
+
     db.prepare(`
       UPDATE blogs
-      SET title = ?, slug = ?, body = ?, cover_image = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+      SET title = ?, slug = ?, body = ?, cover_image = ?, status = ?, edition = ?, video_url = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).run(updatedTitle, updatedSlug, updatedBody, updatedCover, updatedStatus, id);
+    `).run(updatedTitle, updatedSlug, updatedBody, updatedCover, updatedStatus, updatedEdition, updatedVideoUrl, id);
 
     // Update categories if provided
     if (Array.isArray(categories)) {

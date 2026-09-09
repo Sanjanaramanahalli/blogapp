@@ -87,8 +87,10 @@ async function loadBlogDetail() {
       ${adminBarHtml}
       <article class="article-detail-view">
         <header class="article-header">
-          <div class="article-categories">
-            ${categoriesHtml || '<span class="category-badge">Engineering</span>'}
+          <div class="article-categories" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem;">
+            <span class="edition-tag" style="padding: 0.25rem 0.65rem;">${escapeHtml(currentBlog.edition ? currentBlog.edition.toUpperCase() : 'INDIA')} EDITION</span>
+            ${currentBlog.video_url ? `<span class="video-badge">▶ Video Broadcast</span>` : ''}
+            ${categoriesHtml || '<span class="category-badge">News</span>'}
           </div>
           <h1 class="article-title">${escapeHtml(currentBlog.title)}</h1>
           <div class="article-author-row">
@@ -106,9 +108,21 @@ async function loadBlogDetail() {
           </div>
         </header>
 
-        <div class="article-cover-wrapper">
-          <img src="${escapeHtml(cover)}" alt="${escapeHtml(currentBlog.title)}" class="article-cover-img">
-        </div>
+        ${currentBlog.video_url ? `
+          <div class="article-video-wrapper" style="margin-bottom: 2rem; border-radius: var(--radius-lg); overflow: hidden; background: #000; box-shadow: var(--shadow-lg);">
+            <div style="padding: 0.6rem 1rem; background: rgba(0,0,0,0.8); color: #fff; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600;">
+              <span style="color: #ef4444;">▶</span> Featured News Broadcast Video
+            </div>
+            <video controls playsinline style="width: 100%; max-height: 480px; display: block;" poster="${escapeHtml(cover)}">
+              <source src="${escapeHtml(currentBlog.video_url)}" type="video/mp4">
+              Your browser does not support HTML5 video playback.
+            </video>
+          </div>
+        ` : `
+          <div class="article-cover-wrapper">
+            <img src="${escapeHtml(cover)}" alt="${escapeHtml(currentBlog.title)}" class="article-cover-img">
+          </div>
+        `}
 
         <div class="article-body">
           ${currentBlog.body}

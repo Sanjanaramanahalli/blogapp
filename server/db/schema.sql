@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   role TEXT CHECK(role IN ('admin', 'reader')) NOT NULL DEFAULT 'reader',
   google_id TEXT UNIQUE,
+  linkedin_id TEXT UNIQUE,
+  github_id TEXT UNIQUE,
   avatar_url TEXT,
   auth_provider TEXT DEFAULT 'local',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -35,6 +37,8 @@ CREATE TABLE IF NOT EXISTS blogs (
   slug TEXT UNIQUE NOT NULL,
   body TEXT NOT NULL,
   cover_image TEXT,
+  video_url TEXT,
+  edition TEXT CHECK(edition IN ('india', 'world')) NOT NULL DEFAULT 'india',
   status TEXT CHECK(status IN ('draft', 'published')) NOT NULL DEFAULT 'draft',
   author_id INTEGER NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
