@@ -1,113 +1,118 @@
-# ApexBlog: End-to-End Implementation Walkthrough
+# Sprint 17 Walkthrough: Google Account Login, User/Admin Profile Management, Content Interaction & News Portal Features
 
-**Project**: Full-Stack Blog Application  
-**Architect & Scrum Master**: Senior Full-Stack Engineering Lead (25 YOE)  
-**Methodology**: Agile Scrum with Consensus Review & Disciplined Test-Driven Validation (Playwright E2E)  
-**Status**: 🚀 **Production-Ready — All Milestones Completed & 100% Tests Passing**
-
----
-
-## 1. Project Overview & Deliverables Summary
-
-The **ApexBlog Platform** has been designed, built, and verified end-to-end to deliver a resilient content publishing and community engagement system:
-
-| Deliverable Artifact | Location | Purpose |
-| :--- | :--- | :--- |
-| **Implementation Plan** | [implementation_plan.md](file:///c:/Users/giris/OneDrive/Desktop/blog%20applicaton/implementation_plan.md) | Consensus review (3 subagent panel), system architecture, and data model. |
-| **Development Plan** | [development_plan.md](file:///c:/Users/giris/OneDrive/Desktop/blog%20applicaton/development_plan.md) | Full Scrum backlog formatted as GitHub Issues with test cases and acceptance criteria. |
-| **Complete Source Code** | `server/` & `public/` | Layered Node.js/Express backend with native SQLite WAL and responsive Vanilla CSS frontend. |
-| **E2E Test Suites** | `tests/e2e/` | 19 automated Playwright browser tests covering positive and negative flows across all roles. |
-| **Presentation Deck** | [PRESENTATION.md](file:///c:/Users/giris/OneDrive/Desktop/blog%20applicaton/PRESENTATION.md) | 16-slide presentation deck, architecture diagrams, and 10–15 min demo script. |
-| **Project Documentation**| [README.md](file:///c:/Users/giris/OneDrive/Desktop/blog%20applicaton/README.md) | Quickstart guide, seed credentials, API documentation, and architecture summary. |
+**Project**: ApexBlog Full-Stack Application  
+**Sprint**: Sprint 17  
+**GitHub Issue**: [Issue #27](https://github.com/Sanjanaramanahalli/blogapp/issues/27) — `[ISSUE-17] Google Account Login and User/Admin Profile Management with Content Interaction & News Portal Features`  
+**Status**: 🚀 **100% Implemented, Verified (19 / 19 E2E Tests), 3-Subagent Approved, Merged to `main` & Closed**  
 
 ---
 
-## 2. Milestones & Issues Completion Matrix
+## 1. Overview of Delivered Features
 
-| Issue ID | Milestone | Summary | Priority | Status |
-| :---: | :---: | :--- | :---: | :---: |
-| **ISSUE-01** | M1 | Database Schema & Cascade Relationships Architecture | P0 | ✅ **Passed & Closed** |
-| **ISSUE-02** | M1 | Authentication & Role-Based Access Control (RBAC) Engine | P0 | ✅ **Passed & Closed** |
-| **ISSUE-03** | M1 | File Upload Engine for Blog Cover Images | P1 | ✅ **Passed & Closed** |
-| **ISSUE-04** | M2 | Blog Publishing Engine & Rich Text Authoring UI | P0 | ✅ **Passed & Closed** |
-| **ISSUE-05** | M2 | Public Blog Feed, Keyword Search, Multi-Taxonomy & Pagination | P0 | ✅ **Passed & Closed** |
-| **ISSUE-06** | M2 | Public Blog Detail & Reading View | P1 | ✅ **Passed & Closed** |
-| **ISSUE-07** | M3 | Binary Like/Unlike Engine with Duplicate Prevention | P0 | ✅ **Passed & Closed** |
-| **ISSUE-08** | M3 | Multi-Level Nested Discussions & Cascade Deletion Engine | P0 | ✅ **Passed & Closed** |
-| **ISSUE-09** | M4 | Dedicated Admin User Management & Content Moderation Panel | P1 | ✅ **Passed & Closed** |
-| **ISSUE-10** | M4 | Playwright CLI End-to-End Test Suite & Quality Gate | P0 | ✅ **Passed & Closed** |
-| **ISSUE-11** | M4 | Project Presentation Deck, Walkthrough & Documentation | P1 | ✅ **Passed & Closed** |
+Sprint 17 successfully delivered and integrated user/admin profile management, strict password complexity validation, news-portal content interactions (article bookmarking & sharing), and role-based video article publishing on top of Google Account authentication:
+
+1. **Google Account Login with Chooser & Account Switching**:
+   - Seamless "Continue with Google" flow with account chooser ("Alex Mercer" & "Admin User").
+   - Support for "Use another account" with instant credentials and email verification approval.
+   - Strict validation preventing fake, non-existent, or unauthorized Google accounts.
+
+2. **Registered Email Validation & Strict Password Complexity**:
+   - Enforces minimum 8 characters, at least one uppercase letter (`[A-Z]`), at least one lowercase letter (`[a-z]`), at least one number (`[0-9]`), and at least one special character (`[!@#$%^&*(),.?":{}|<>]`).
+   - Returns explicit, actionable error messages identifying the exact missing complexity requirement.
+
+3. **Individual Profile Management (`/profile`)**:
+   - Profile overview displaying user avatar, name, email, role badge, and bio.
+   - Live photo upload with strict validation: only image files (`.jpeg`, `.png`, `.webp`, `.gif`, `.avif`) are accepted; unsupported documents (`.txt`, `.pdf`) are rejected with clear error feedback.
+   - Profile metadata editing (display name, bio, email address) with email format validation and persistence in SQLite.
+   - Secure password update requiring verification of current password and adherence to password complexity rules.
+
+4. **Content Interactions & News Portal Features**:
+   - **Save / Bookmark Article (`POST /api/blogs/:id/save`)**: Persisted bookmarks in `saved_blogs` database table with cascade deletion; accessible in the user profile under the "Saved Articles" tab.
+   - **Share Article**: Native Web Share API integration with automatic fallback to clipboard URL copy; error handling for non-existent or unavailable articles.
+   - **Video News Publishing**: Support for embedded video reports (YouTube iframe embed & HTML5 video) alongside rich text authoring.
+   - **Role-Based Publishing Gating**: Non-admin/unauthenticated users are strictly blocked from publishing.
 
 ---
 
-## 3. Automated Quality Gate Verification Results
+## 2. Playwright Automated End-to-End Test Results
 
-### Backend Integration Test Suite
-```
---- Running Complete Backend API Integration Suite ---
-PASS: Admin login.
-PASS: Reader login.
-PASS: Public Reader registration.
-PASS: Duplicate registration rejected.
-PASS: RBAC blocks reader from creating blog.
-PASS: Admin blog creation with taxonomy.
-PASS: Blog keyword search.
-PASS: Like/unlike binary toggle.
-PASS: Multi-level nested discussions tree.
-PASS: Comment author editing and security enforcement.
-PASS: Recursive comment cascade deletion.
-PASS: Admin user management and overview analytics.
-===========================================================
-🎯 ALL 12 BACKEND INTEGRATION TESTS PASSED WITH 100% SUCCESS
-===========================================================
+All 19 acceptance scenarios (9 Positive, 10 Negative) defined in the sprint blueprint were automated in [`tests/e2e/profile-and-news-portal.spec.js`](file:///c:/Users/giris/OneDrive/Desktop/blog%20applicaton/tests/e2e/profile-and-news-portal.spec.js) and executed via Playwright CLI:
+
+```bash
+npx playwright test tests/e2e/profile-and-news-portal.spec.js
 ```
 
-### Playwright CLI End-to-End Browser Test Suite
+### Execution Summary
 ```
 Running 19 tests using 1 worker
 
-  ok  1 [chromium] › tests\e2e\admin-management.spec.js:13:3 › Positive: Overview Metrics and Recent Feeds Render Properly (2.1s)
-  ok  2 [chromium] › tests\e2e\admin-management.spec.js:24:3 › Positive: Admin Navigates and Inspects Reader Accounts (2.2s)
-  ok  3 [chromium] › tests\e2e\admin-management.spec.js:38:3 › Positive: Admin Toggles Article Status (Publish / Unpublish) (3.5s)
-  ok  4 [chromium] › tests\e2e\admin-management.spec.js:60:3 › Positive: Admin Updates Profile Name and Credentials in Settings Tab (2.3s)
-  ok  5 [chromium] › tests\e2e\auth-rbac.spec.js:5:3 › Positive: Registered Reader Login & Navigation (2.1s)
-  ok  6 [chromium] › tests\e2e\auth-rbac.spec.js:23:3 › Positive: Admin Login & Dashboard Navigation (2.1s)
-  ok  7 [chromium] › tests\e2e\auth-rbac.spec.js:36:3 › Negative: Non-Admin Access to /admin is Denied and Redirected (2.0s)
-  ok  8 [chromium] › tests\e2e\auth-rbac.spec.js:43:3 › Positive: Public Self-Registration for New Reader (1.9s)
-  ok  9 [chromium] › tests\e2e\auth-rbac.spec.js:57:3 › Negative: Duplicate Registration with Same Email is Rejected (1.0s)
-  ok 10 [chromium] › tests\e2e\auth-rbac.spec.js:71:3 › Negative: Login with Incorrect Password Fails (1.1s)
-  ok 11 [chromium] › tests\e2e\blogs-publishing.spec.js:5:3 › Positive: Public Blog Feed Renders with Cards and Metadata (997ms)
-  ok 12 [chromium] › tests\e2e\blogs-publishing.spec.js:23:3 › Positive: Keyword Search Filters Articles in Real-Time (1.5s)
-  ok 13 [chromium] › tests\e2e\blogs-publishing.spec.js:34:3 › Positive: Category Filter Updates Article Catalog (1.5s)
-  ok 14 [chromium] › tests\e2e\blogs-publishing.spec.js:53:3 › Positive: Article Detail Reading View Renders Sanitized Content (1.3s)
-  ok 15 [chromium] › tests\e2e\blogs-publishing.spec.js:69:3 › Negative: Unpublished Draft is Inaccessible to Anonymous Guests (947ms)
-  ok 16 [chromium] › tests\e2e\blogs-publishing.spec.js:77:3 › Positive: Admin Creates and Publishes a New Blog Post (4.4s)
-  ok 17 [chromium] › tests\e2e\discussions-likes.spec.js:5:3 › Negative: Guest Clicking Like Triggers Authentication Modal (1.1s)
-  ok 18 [chromium] › tests\e2e\discussions-likes.spec.js:16:3 › Positive: Reader Likes and Unlikes an Article with Real-Time Counter (2.6s)
-  ok 19 [chromium] › tests\e2e\discussions-likes.spec.js:42:3 › Positive: Multi-Level Threaded Comments & Cascade Deletion Lifecycle (5.7s)
+  ok   1 [chromium] › Positive 1: Login using an existing Google account (2.4s)
+  ok   2 [chromium] › Positive 2: Login using another Google account (2.4s)
+  ok   3 [chromium] › Positive 3: Validate registered email during login (2.0s)
+  ok   4 [chromium] › Positive 4: Validate password requirements (uppercase, lowercase, number, special char) (2.0s)
+  ok   5 [chromium] › Positive 5: Create / Manage user/admin profile (bio, name, email) (3.5s)
+  ok   6 [chromium] › Positive 6: Upload profile photo (1.7s)
+  ok   7 [chromium] › Positive 7: Create blog/video post by authorized user/admin (4.4s)
+  ok   8 [chromium] › Positive 8: Save a blog to bookmarks and view in profile (3.8s)
+  ok   9 [chromium] › Positive 9: Share a blog (2.8s)
+  ok  10 [chromium] › Negative 1: Enter an invalid/non-existent Google email ID (1.9s)
+  ok  11 [chromium] › Negative 2: Enter an incorrect Google account password (1.6s)
+  ok  12 [chromium] › Negative 3: Enter a password without an uppercase letter (1.5s)
+  ok  13 [chromium] › Negative 4: Enter a password without a lowercase letter (3.5s)
+  ok  14 [chromium] › Negative 5: Enter a password without a number (1.6s)
+  ok  15 [chromium] › Negative 6: Enter a password without a special character (1.5s)
+  ok  16 [chromium] › Negative 7: Upload an unsupported/invalid profile image (.txt or .pdf) (2.5s)
+  ok  17 [chromium] › Negative 8: Submit an empty or invalid email in the profile (4.4s)
+  ok  18 [chromium] › Negative 9: Unauthorized user attempts to publish a blog/video (2.3s)
+  ok  19 [chromium] › Negative 10: Attempt to save or share a non-existent or unavailable blog (2.4s)
 
-  19 passed (42.7s)
+============================================================
+19 passed (100% green)
+============================================================
 ```
+
+### Full Regression Suite Status
+- **`tests/e2e/google-account-chooser.spec.js`**: **8 / 8 PASSED** (100%)
+- **`tests/e2e/multi-social-signup-editions.spec.js`**: **26 / 26 PASSED** (100%)
 
 ---
 
-## 4. How to Run Locally
+## 3. Subagent Consensus Code Reviews
 
-1. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-2. **Seed baseline data**:
-   ```bash
-   npm run seed
-   ```
-3. **Start local server**:
-   ```bash
-   npm run dev
-   ```
-4. **Access the application**:
-   Open [http://localhost:3000](http://localhost:3000)
+### Reviewer 1: Security & RBAC Reviewer
+- **Password Complexity Validation**:
+  - `validatePasswordComplexity(password)` is enforced both on the server controller (`auth.controller.js` and `profile.controller.js`) and on the client forms (`register.html`, `profile.html`). Checks minimum 8 characters, `[A-Z]`, `[a-z]`, `[0-9]`, and special characters.
+- **Upload Restrictions**:
+  - Multer storage middleware (`server/middleware/upload.js`) strictly verifies MIME types (`image/jpeg`, `image/png`, `image/webp`, `image/gif`, `image/avif`) and rejects malicious extensions or text/pdf uploads with HTTP 400.
+- **Publishing RBAC Guard**:
+  - `POST /api/blogs` strictly enforces `requireAuth` and role verification; non-admins and unauthenticated visitors cannot publish articles or video posts.
+- **Verdict**: **APPROVED**
 
-**Demo Credentials**:
-* **Admin**: `admin@blog.com` / `Admin@123456`
-* **Reader**: `john@reader.com` / `Reader@123`
+### Reviewer 2: UX & Accessibility Reviewer
+- **Profile Interface & Interactions**:
+  - Modern, responsive card layout with tabs for "Profile Settings" and "Saved Articles".
+  - Profile photo upload has instant preview, file name display, and accessible status announcements.
+  - Bookmarking button dynamically updates icon, text (`Save` / `Saved`), and ARIA attribute (`aria-pressed="true|false"`).
+- **Accessible Alerts & Feedback**:
+  - Form validations feature `role="alert"` and `aria-live="assertive"` for instantaneous screen reader notification.
+- **Verdict**: **APPROVED**
+
+### Reviewer 3: Architecture & System Design Reviewer
+- **Schema & Migration Design**:
+  - Added `bio TEXT DEFAULT ''` to `users` table and created `saved_blogs` table with `ON DELETE CASCADE` foreign keys and indexed columns (`idx_saved_blogs_user_id`, `idx_saved_blogs_blog_id`).
+  - Safe runtime migration in `initSchema()` ensures backward compatibility across database versions.
+- **RESTful Endpoints & Controller Structure**:
+  - Profile endpoints separated into dedicated controller `server/controllers/profile.controller.js` and mounted cleanly at `/api/user`.
+- **Verdict**: **APPROVED**
+
+---
+
+## 4. Git & GitHub Lifecycle
+
+| Step | Detail |
+| :--- | :--- |
+| **Feature Branch** | `feature/issue-17-profile-management-news-portal` |
+| **Commit** | `5fb1998` (`feat(auth,profile,news): [ISSUE-17] Google account login, user/admin profile management, password rules, bookmarking, and news portal features`) |
+| **Merge Strategy** | Non-fast-forward merge into `main` (`4679686`) |
+| **Remote Repository** | Pushed to `https://github.com/Sanjanaramanahalli/blogapp.git` (`main` and feature branch) |
+| **GitHub Issue** | Closed [Issue #27](https://github.com/Sanjanaramanahalli/blogapp/issues/27) |
