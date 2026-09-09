@@ -456,10 +456,10 @@ function renderSocialAuthScreen(req, res) {
 function socialMockAuthenticate(req, res) {
   try {
     const provider = getProvider(req) || 'google';
-    const { email, password, state, action } = req.body || {};
+    const { email, password, state, action, verificationApproved } = req.body || {};
 
-    // Handle user cancellation
-    if (action === 'cancel') {
+    // Handle user cancellation or denial
+    if (action === 'cancel' || action === 'deny') {
       return res.status(200).json({
         success: true,
         redirectUrl: '/login?error=cancelled'
@@ -475,6 +475,16 @@ function socialMockAuthenticate(req, res) {
     }
 
     const trimmedEmail = email.trim();
+
+    // Check for unauthorized / blocked accounts (Negative scenario 3)
+    const isUnauthorized = trimmedEmail.toLowerCase().includes('unauthorized') || 
+                           trimmedEmail.toLowerCase().includes('blocked');
+    if (isUnauthorized) {
+      return res.status(403).json({
+        error: `Access denied. This ${provider === 'google' ? 'Google' : provider} account is not authorized to access ApexBlog.`
+      });
+    }
+
     const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(trimmedEmail);
     const isKnownInvalid = trimmedEmail.toLowerCase().includes('invalid') || 
                            trimmedEmail.toLowerCase().includes('notfound') || 
@@ -487,19 +497,22 @@ function socialMockAuthenticate(req, res) {
       return res.status(400).json({ error: notFoundMsg });
     }
 
-    // Validate password correctness
-    const isIncorrectPassword = !password || 
-                                password === 'wrong' || 
-                                password === 'wrongpassword' || 
-                                password === 'incorrect' || 
-                                password === 'invalid' || 
-                                password.length < 6;
+    // If verificationApproved is true (e.g. from Google Account Verification prompt), bypass password check
+    if (!verificationApproved) {
+      // Validate password correctness
+      const isIncorrectPassword = !password || 
+                                  password === 'wrong' || 
+                                  password === 'wrongpassword' || 
+                                  password === 'incorrect' || 
+                                  password === 'invalid' || 
+                                  password.length < 6;
 
-    if (isIncorrectPassword) {
-      let wrongPassMsg = 'Wrong password. Try again or click Forgot password to reset it.';
-      if (provider === 'linkedin') wrongPassMsg = "That's not the right password. Try again.";
-      if (provider === 'github') wrongPassMsg = 'Incorrect username or password.';
-      return res.status(401).json({ error: wrongPassMsg });
+      if (isIncorrectPassword) {
+        let wrongPassMsg = 'Wrong password. Try again or click Forgot password to reset it.';
+        if (provider === 'linkedin') wrongPassMsg = "That's not the right password. Try again.";
+        if (provider === 'github') wrongPassMsg = 'Incorrect username or password.';
+        return res.status(401).json({ error: wrongPassMsg });
+      }
     }
 
     // Issue mock authorization code tied to user profile

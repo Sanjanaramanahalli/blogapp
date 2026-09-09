@@ -2,6 +2,10 @@ const { test, expect } = require('@playwright/test');
 
 test.describe('[ISSUE-15] Multi-Provider Social Signup & Edition-Based News Access', () => {
 
+  test.afterEach(async ({ page }) => {
+    await page.waitForTimeout(200);
+  });
+
   // ==========================================
   // POSITIVE TEST SCENARIOS
   // ==========================================

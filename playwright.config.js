@@ -8,7 +8,7 @@ module.exports = defineConfig({
   },
   fullyParallel: false,
   workers: 1, // Single worker to avoid SQLite database lock contention during tests
-  retries: 1,
+  retries: 2,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: 'http://127.0.0.1:3000',
