@@ -76,12 +76,19 @@ function hydrateBlogs(blogs, currentUserId = null) {
 
   // User liked map
   let userLikedMap = new Set();
+  let userSavedMap = new Set();
   if (currentUserId) {
     const userLikesQuery = `
       SELECT blog_id FROM likes WHERE user_id = ? AND blog_id IN (${placeholders})
     `;
     const userLikedRows = db.prepare(userLikesQuery).all(currentUserId, ...blogIds);
     userLikedRows.forEach(r => userLikedMap.add(r.blog_id));
+
+    const userSavedQuery = `
+      SELECT blog_id FROM saved_blogs WHERE user_id = ? AND blog_id IN (${placeholders})
+    `;
+    const userSavedRows = db.prepare(userSavedQuery).all(currentUserId, ...blogIds);
+    userSavedRows.forEach(r => userSavedMap.add(r.blog_id));
   }
 
   // Maps
@@ -114,7 +121,8 @@ function hydrateBlogs(blogs, currentUserId = null) {
     tags: tagMap[b.id] || [],
     like_count: likeMap[b.id] || 0,
     comment_count: commentMap[b.id] || 0,
-    user_liked: currentUserId ? userLikedMap.has(b.id) : false
+    user_liked: currentUserId ? userLikedMap.has(b.id) : false,
+    user_saved: currentUserId ? userSavedMap.has(b.id) : false
   }));
 }
 

@@ -48,13 +48,13 @@
           <div class="form-group">
             <label class="form-label" for="reg-password">Password (Minimum 6 characters)</label>
             <div style="position: relative; display: flex; align-items: center;">
-              <input type="password" id="reg-password" class="form-control" placeholder="••••••••" required minlength="6" autocomplete="new-password" style="padding-right: 2.75rem; width: 100%;">
+              <input type="password" id="reg-password" class="form-control" placeholder="••••••••" required autocomplete="new-password" style="padding-right: 2.75rem; width: 100%;">
               <button type="button" id="btn-toggle-reg-password" class="btn-icon btn-toggle-pw" aria-label="Show password" aria-pressed="false" style="position: absolute; right: 0.65rem; background: transparent; border: none; cursor: pointer; color: var(--text-muted); padding: 0.35rem; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-sm, 6px); transition: color 0.2s, background-color 0.2s;" title="Show password">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
               </button>
             </div>
             <div id="password-hint" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;">
-              Must be at least 6 characters.
+              Must be at least 8 characters with uppercase, lowercase, number, & symbol.
             </div>
           </div>
 
@@ -129,15 +129,16 @@
 
         // Real-time password feedback
         passwordInput?.addEventListener('input', () => {
-          const len = passwordInput.value.length;
+          const val = passwordInput.value;
+          const len = val.length;
           if (len === 0) {
-            passwordHint.textContent = 'Must be at least 6 characters.';
+            passwordHint.textContent = 'Must be at least 8 characters with uppercase, lowercase, number, & symbol.';
             passwordHint.style.color = 'var(--text-muted)';
-          } else if (len < 6) {
-            passwordHint.textContent = `${6 - len} more character${6 - len > 1 ? 's' : ''} needed`;
+          } else if (len < 8 || !/[A-Z]/.test(val) || !/[a-z]/.test(val) || !/[0-9]/.test(val) || !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(val)) {
+            passwordHint.textContent = 'Requires uppercase, lowercase, number, & special character.';
             passwordHint.style.color = 'var(--warning, #f59e0b)';
           } else {
-            passwordHint.textContent = '✓ Strong password length';
+            passwordHint.textContent = '✓ Strong password requirement met';
             passwordHint.style.color = 'var(--success, #10b981)';
           }
         });
@@ -159,11 +160,49 @@
             return;
           }
 
-          if (password.length < 6) {
+          if (password.length < 8) {
+            const msg = 'Password must be at least 8 characters long.';
             if (errorAlert) {
-              errorAlert.textContent = 'Password must be at least 6 characters in length.';
+              errorAlert.textContent = msg;
               errorAlert.style.display = 'block';
             }
+            showToast(msg, 'error');
+            return;
+          }
+          if (!/[A-Z]/.test(password)) {
+            const msg = 'Password must contain at least one uppercase letter.';
+            if (errorAlert) {
+              errorAlert.textContent = msg;
+              errorAlert.style.display = 'block';
+            }
+            showToast(msg, 'error');
+            return;
+          }
+          if (!/[a-z]/.test(password)) {
+            const msg = 'Password must contain at least one lowercase letter.';
+            if (errorAlert) {
+              errorAlert.textContent = msg;
+              errorAlert.style.display = 'block';
+            }
+            showToast(msg, 'error');
+            return;
+          }
+          if (!/[0-9]/.test(password)) {
+            const msg = 'Password must contain at least one number.';
+            if (errorAlert) {
+              errorAlert.textContent = msg;
+              errorAlert.style.display = 'block';
+            }
+            showToast(msg, 'error');
+            return;
+          }
+          if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(password)) {
+            const msg = 'Password must contain at least one special character.';
+            if (errorAlert) {
+              errorAlert.textContent = msg;
+              errorAlert.style.display = 'block';
+            }
+            showToast(msg, 'error');
             return;
           }
 

@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
   linkedin_id TEXT UNIQUE,
   github_id TEXT UNIQUE,
   avatar_url TEXT,
+  bio TEXT DEFAULT '',
   auth_provider TEXT DEFAULT 'local',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -99,6 +100,17 @@ CREATE TABLE IF NOT EXISTS password_resets (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Saved Blogs Table (Bookmarks)
+CREATE TABLE IF NOT EXISTS saved_blogs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  blog_id INTEGER NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, blog_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_blogs_status ON blogs(status);
 CREATE INDEX IF NOT EXISTS idx_blogs_slug ON blogs(slug);
@@ -106,3 +118,5 @@ CREATE INDEX IF NOT EXISTS idx_comments_blog_id ON comments(blog_id);
 CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id);
 CREATE INDEX IF NOT EXISTS idx_likes_blog_id ON likes(blog_id);
 CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email);
+CREATE INDEX IF NOT EXISTS idx_saved_blogs_user_id ON saved_blogs(user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_blogs_blog_id ON saved_blogs(blog_id);

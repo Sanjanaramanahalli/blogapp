@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const blogController = require('../controllers/blog.controller');
 const likeController = require('../controllers/like.controller');
+const profileController = require('../controllers/profile.controller');
 const { requireAdmin, requireAuth, requireOwnerOrAdmin } = require('../middleware/auth');
 
 // Public routes
@@ -19,6 +20,17 @@ router.post('/:id/like', requireAuth, (req, res, next) => {
   req.params.blogId = req.params.id;
   next();
 }, likeController.toggleLike);
+
+// Bookmarking & Saved Blogs (Save / Unsave)
+router.post('/:id/save', requireAuth, (req, res, next) => {
+  req.params.blogId = req.params.id;
+  next();
+}, profileController.toggleSaveBlog);
+
+router.delete('/:id/save', requireAuth, (req, res, next) => {
+  req.params.blogId = req.params.id;
+  next();
+}, profileController.unsaveBlog);
 
 // Publishing & Author/Admin management routes
 router.post('/', requireAuth, blogController.createBlog);

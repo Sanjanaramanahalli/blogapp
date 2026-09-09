@@ -5,6 +5,26 @@ const { db } = require('../db/database');
 const { generateToken } = require('../middleware/auth');
 const { sendOtpEmail } = require('../utils/mailer');
 
+// Password complexity validator meeting Blueprint requirements
+function validatePasswordComplexity(password) {
+  if (!password || password.length < 8) {
+    return 'Password must be at least 8 characters long.';
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'Password must contain at least one uppercase letter.';
+  }
+  if (!/[a-z]/.test(password)) {
+    return 'Password must contain at least one lowercase letter.';
+  }
+  if (!/[0-9]/.test(password)) {
+    return 'Password must contain at least one number.';
+  }
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(password)) {
+    return 'Password must contain at least one special character.';
+  }
+  return null;
+}
+
 // Register a new Reader
 function register(req, res) {
   try {
@@ -16,8 +36,10 @@ function register(req, res) {
     if (!email || !email.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
       return res.status(400).json({ error: 'A valid email address is required.' });
     }
-    if (!password || password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+    
+    const pwError = validatePasswordComplexity(password);
+    if (pwError) {
+      return res.status(400).json({ error: pwError });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -118,7 +140,7 @@ function getMe(req, res) {
 // Update profile / credentials
 function updateProfile(req, res) {
   try {
-    const { name, email, currentPassword, newPassword } = req.body;
+    const { name, email, bio, avatar_url, currentPassword, newPassword } = req.body;
     const userId = req.user.id;
 
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
@@ -128,15 +150,31 @@ function updateProfile(req, res) {
 
     let updatedName = user.name;
     let updatedEmail = user.email;
+    let updatedBio = user.bio !== undefined && user.bio !== null ? user.bio : '';
+    let updatedAvatarUrl = user.avatar_url;
     let updatedPasswordHash = user.password_hash;
 
-    if (name && name.trim()) {
+    if (name !== undefined) {
+      if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'Name cannot be empty.' });
+      }
       updatedName = name.trim();
     }
 
-    if (email && email.trim()) {
+    if (bio !== undefined) {
+      updatedBio = typeof bio === 'string' ? bio.trim() : '';
+    }
+
+    if (avatar_url !== undefined) {
+      updatedAvatarUrl = typeof avatar_url === 'string' ? avatar_url.trim() : null;
+    }
+
+    if (email !== undefined) {
+      if (!email || !email.trim() || !/^\S+@\S+\.\S+$/.test(email.trim())) {
+        return res.status(400).json({ error: 'A valid email address is required.' });
+      }
       const normalizedEmail = email.trim().toLowerCase();
-      if (normalizedEmail !== user.email) {
+      if (normalizedEmail !== user.email.toLowerCase()) {
         const existing = db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').get(normalizedEmail, userId);
         if (existing) {
           return res.status(409).json({ error: 'Email address is already in use by another account.' });
@@ -152,23 +190,27 @@ function updateProfile(req, res) {
       if (!bcrypt.compareSync(currentPassword, user.password_hash)) {
         return res.status(401).json({ error: 'Current password does not match.' });
       }
-      if (newPassword.length < 6) {
-        return res.status(400).json({ error: 'New password must be at least 6 characters long.' });
+      const pwError = validatePasswordComplexity(newPassword);
+      if (pwError) {
+        return res.status(400).json({ error: pwError });
       }
       updatedPasswordHash = bcrypt.hashSync(newPassword, 10);
     }
 
     db.prepare(`
       UPDATE users
-      SET name = ?, email = ?, password_hash = ?
+      SET name = ?, email = ?, bio = ?, avatar_url = ?, password_hash = ?
       WHERE id = ?
-    `).run(updatedName, updatedEmail, updatedPasswordHash, userId);
+    `).run(updatedName, updatedEmail, updatedBio, updatedAvatarUrl, updatedPasswordHash, userId);
 
     const safeUser = {
       id: user.id,
       name: updatedName,
       email: updatedEmail,
+      bio: updatedBio,
+      avatar_url: updatedAvatarUrl,
       role: user.role,
+      auth_provider: user.auth_provider,
       created_at: user.created_at
     };
 
@@ -501,10 +543,9 @@ function socialMockAuthenticate(req, res) {
     if (!verificationApproved) {
       // Validate password correctness
       const isIncorrectPassword = !password || 
-                                  password === 'wrong' || 
-                                  password === 'wrongpassword' || 
-                                  password === 'incorrect' || 
-                                  password === 'invalid' || 
+                                  password.toLowerCase().includes('wrong') || 
+                                  password.toLowerCase().includes('incorrect') || 
+                                  password.toLowerCase().includes('invalid') || 
                                   password.length < 6;
 
       if (isIncorrectPassword) {
@@ -719,6 +760,7 @@ module.exports = {
   googleAuthInit,
   renderGoogleAuthScreen,
   googleMockAuthenticate,
-  googleAuthCallback
+  googleAuthCallback,
+  validatePasswordComplexity
 };
 

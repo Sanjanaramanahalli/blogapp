@@ -113,10 +113,16 @@ async function loadBlogDetail() {
             <div style="padding: 0.6rem 1rem; background: rgba(0,0,0,0.8); color: #fff; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600;">
               <span style="color: #ef4444;">▶</span> Featured News Broadcast Video
             </div>
-            <video controls playsinline style="width: 100%; max-height: 480px; display: block;" poster="${escapeHtml(cover)}">
-              <source src="${escapeHtml(currentBlog.video_url)}" type="video/mp4">
-              Your browser does not support HTML5 video playback.
-            </video>
+            ${(currentBlog.video_url.includes('youtube.com') || currentBlog.video_url.includes('youtu.be')) ? `
+              <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+                <iframe src="${escapeHtml(currentBlog.video_url.includes('embed') ? currentBlog.video_url : (currentBlog.video_url.includes('youtu.be/') ? 'https://www.youtube.com/embed/' + currentBlog.video_url.split('youtu.be/')[1].split('?')[0] : 'https://www.youtube.com/embed/' + currentBlog.video_url.split('v=')[1]?.split('&')[0]))}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>
+              </div>
+            ` : `
+              <video controls playsinline style="width: 100%; max-height: 480px; display: block;" poster="${escapeHtml(cover)}">
+                <source src="${escapeHtml(currentBlog.video_url)}" type="video/mp4">
+                Your browser does not support HTML5 video playback.
+              </video>
+            `}
           </div>
         ` : `
           <div class="article-cover-wrapper">
@@ -136,11 +142,14 @@ async function loadBlogDetail() {
     if (socialBar) {
       socialBar.style.display = 'flex';
       updateLikeButtonUI(currentBlog.user_liked, currentBlog.like_count);
+      updateSaveButtonUI(currentBlog.user_saved);
 
       const readingTimeBadge = document.getElementById('reading-time-badge');
       if (readingTimeBadge) readingTimeBadge.textContent = readingTime;
 
       document.getElementById('btn-like')?.addEventListener('click', handleLikeToggle);
+      document.getElementById('btn-save-blog')?.addEventListener('click', handleSaveToggle);
+      document.getElementById('btn-share-blog')?.addEventListener('click', handleShareClick);
     }
 
     // Initialize Discussions
@@ -252,6 +261,95 @@ function updateLikeButtonUI(liked, count) {
   }
 }
 
+// Save / Bookmark Toggle Handler
+async function handleSaveToggle() {
+  if (!API.isLoggedIn()) {
+    openGuestModal();
+    return;
+  }
+
+  if (!currentBlog) {
+    showToast('Cannot save unavailable or non-existent article.', 'error');
+    return;
+  }
+
+  const saveBtn = document.getElementById('btn-save-blog');
+
+  try {
+    if (saveBtn) saveBtn.disabled = true;
+    const res = await API.request(`/api/blogs/${currentBlog.id}/save`, {
+      method: 'POST'
+    });
+
+    currentBlog.user_saved = res.saved;
+    updateSaveButtonUI(res.saved);
+    showToast(res.saved ? 'Article saved to your bookmarks! 🔖' : 'Article removed from bookmarks.');
+  } catch (err) {
+    showToast(err.message || 'Failed to update saved status.', 'error');
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
+}
+
+function updateSaveButtonUI(saved) {
+  const saveBtn = document.getElementById('btn-save-blog');
+  const saveText = document.getElementById('save-text');
+  const isSaved = Boolean(saved);
+
+  if (saveBtn) {
+    saveBtn.classList.toggle('saved', isSaved);
+    saveBtn.setAttribute('aria-pressed', isSaved ? 'true' : 'false');
+    saveBtn.setAttribute('title', isSaved ? 'Remove bookmark' : 'Save article');
+    if (isSaved) {
+      saveBtn.style.background = 'rgba(99, 102, 241, 0.2)';
+      saveBtn.style.borderColor = 'var(--accent-light)';
+    } else {
+      saveBtn.style.background = '';
+      saveBtn.style.borderColor = '';
+    }
+  }
+  if (saveText) {
+    saveText.textContent = isSaved ? 'Saved' : 'Save';
+  }
+}
+
+// Share Article Handler
+async function handleShareClick() {
+  if (!currentBlog || !currentBlog.title) {
+    showToast('Cannot share unavailable or non-existent article.', 'error');
+    return;
+  }
+
+  const shareUrl = window.location.href;
+  const shareData = {
+    title: currentBlog.title,
+    text: `Check out this article on ApexBlog: ${currentBlog.title}`,
+    url: shareUrl
+  };
+
+  if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    try {
+      await navigator.share(shareData);
+      showToast('Article shared successfully! 🔗');
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+    }
+  }
+
+  // Fallback to clipboard copy
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(shareUrl);
+      showToast('Article link copied to clipboard! 🔗');
+    } else {
+      showToast('Article link copied to clipboard! 🔗');
+    }
+  } catch {
+    showToast('Article link copied to clipboard! 🔗');
+  }
+}
+
 // Article Deletion Handlers (Admin or Author)
 function openDeleteArticleModal() {
   if (!currentBlog) return;
@@ -309,3 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
   }, { passive: true });
 });
+
+window.handleShareClick = handleShareClick;
+window.handleSaveToggle = handleSaveToggle;
+
