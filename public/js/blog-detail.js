@@ -40,6 +40,13 @@ async function loadBlogDetail() {
     const data = await API.request(`/api/blogs/${encodeURIComponent(slug)}`);
     currentBlog = data.blog;
 
+    // Check user role for admin/author management controls
+    await API.checkAuth();
+    const isUserAdmin = API.isAdmin();
+    const currentUser = API.getUser();
+    const isAuthor = currentUser && currentUser.id === currentBlog.author_id;
+    const canManage = isUserAdmin || isAuthor;
+
     document.title = `${currentBlog.title} — ApexBlog`;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc && currentBlog.body) {
@@ -61,7 +68,23 @@ async function loadBlogDetail() {
       .map(t => `<span class="tag-badge">#${escapeHtml(t.name)}</span>`)
       .join('');
 
+    const adminBarHtml = canManage ? `
+      <div class="admin-post-toolbar" style="display: flex; justify-content: space-between; align-items: center; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: var(--radius-md); padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+          <span style="font-size: 1.2rem;">🛡️</span>
+          <span><strong>${isUserAdmin ? 'Administrator Post Controls' : 'Author Controls'}:</strong> Article written by <strong>${escapeHtml(currentBlog.author_name)}</strong> (${escapeHtml(currentBlog.author_email || 'User')})</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          ${isUserAdmin ? `<a href="/admin" class="btn btn-outline btn-sm" style="font-size: 0.8rem;">Admin Dashboard</a>` : ''}
+          <button type="button" class="btn btn-danger btn-sm" id="btn-admin-delete-blog" onclick="openDeleteArticleModal()" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+            🗑️ Delete Article ${isUserAdmin ? '(Admin)' : ''}
+          </button>
+        </div>
+      </div>
+    ` : '';
+
     container.innerHTML = `
+      ${adminBarHtml}
       <article class="article-detail-view">
         <header class="article-header">
           <div class="article-categories">
@@ -215,6 +238,60 @@ function updateLikeButtonUI(liked, count) {
   }
 }
 
+// Article Deletion Handlers (Admin or Author)
+function openDeleteArticleModal() {
+  if (!currentBlog) return;
+  const modal = document.getElementById('delete-article-modal');
+  const warningText = document.getElementById('delete-article-warning-text');
+  if (warningText) {
+    const authorInfo = currentBlog.author_name ? ` written by <strong>${escapeHtml(currentBlog.author_name)}</strong>` : '';
+    warningText.innerHTML = `Are you sure you want to permanently delete <strong>"${escapeHtml(currentBlog.title)}"</strong>${authorInfo}?`;
+  }
+  if (modal) modal.classList.add('active');
+}
+
+function closeDeleteArticleModal() {
+  const modal = document.getElementById('delete-article-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+async function confirmDeleteArticle() {
+  if (!currentBlog) return;
+  const confirmBtn = document.getElementById('btn-confirm-delete-article');
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Deleting...';
+  }
+
+  try {
+    const res = await API.request(`/api/blogs/${currentBlog.id}`, {
+      method: 'DELETE'
+    });
+    showToast(res.message || 'Article permanently deleted.');
+    closeDeleteArticleModal();
+    setTimeout(() => {
+      window.location.href = API.isAdmin() ? '/admin' : '/';
+    }, 800);
+  } catch (err) {
+    showToast(err.message || 'Failed to delete article.', 'error');
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Permanently Delete';
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   loadBlogDetail();
+  document.getElementById('btn-confirm-delete-article')?.addEventListener('click', confirmDeleteArticle);
+
+  // Dynamic Scroll Reading Progress Bar
+  window.addEventListener('scroll', () => {
+    const bar = document.getElementById('reading-progress-bar');
+    if (!bar) return;
+    const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrollPos = window.scrollY || document.documentElement.scrollTop;
+    const percent = docHeight > 0 ? (scrollPos / docHeight) * 100 : 0;
+    bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+  }, { passive: true });
 });

@@ -31,6 +31,7 @@ function seedDatabase() {
   insertUserStmt.run('System Administrator', 'admin@blog.com', adminPasswordHash, 'admin');
   insertUserStmt.run('John Reader', 'john@reader.com', readerPasswordHash, 'reader');
   insertUserStmt.run('Sarah Connor', 'sarah@reader.com', readerPasswordHash, 'reader');
+  insertUserStmt.run('Sanjana', 'sanjanalr8@gmail.com', readerPasswordHash, 'reader');
 
   const adminUser = db.prepare('SELECT id FROM users WHERE email = ?').get('admin@blog.com');
   const johnUser = db.prepare('SELECT id FROM users WHERE email = ?').get('john@reader.com');
@@ -110,9 +111,69 @@ function seedDatabase() {
     adminUser.id
   );
 
+  // Blog 4: Published
+  insertBlogStmt.run(
+    'Mastering SQLite WAL Mode for High Concurrency Web Backends',
+    'mastering-sqlite-wal-mode',
+    `<h2>Concurrency Without Complexity</h2>
+    <p>Write-Ahead Logging (WAL) completely decouples readers from writers in SQLite. Readers never block writers, and writers never block readers, achieving exceptional read performance on modern hardware.</p>`,
+    'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1200&q=80',
+    'published',
+    johnUser.id
+  );
+
+  // Blog 5: Published
+  insertBlogStmt.run(
+    'Modern Frontend Aesthetics: Glassmorphism and Fluid Responsive Layouts',
+    'modern-frontend-aesthetics-glassmorphism',
+    `<h2>Crafting Interfaces That Delight</h2>
+    <p>Modern web users expect interfaces that feel alive, responsive, and tactile. By pairing subtle backdrop blurs with tailored HSL color tokens and clamp() fluid typography, applications stand out with premium visual quality.</p>`,
+    'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80',
+    'published',
+    sarahUser.id
+  );
+
+  // Blog 6: Published
+  insertBlogStmt.run(
+    'Building Resilient Microservices with Event-Driven Architecture',
+    'building-resilient-microservices',
+    `<h2>Decoupled Scaling Patterns</h2>
+    <p>Event streams provide a resilient backbone for asynchronous communication across microservices. By ensuring idempotency and replayability, systems remain robust in the face of partial network failures.</p>`,
+    'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
+    'published',
+    adminUser.id
+  );
+
+  // Blog 7: Published
+  insertBlogStmt.run(
+    'Defensive API Design: Input Sanitization, CSRF, and RBAC',
+    'defensive-api-design-security',
+    `<h2>Zero-Trust Web Applications</h2>
+    <p>Security must be embedded into every route, handler, and database query. By sanitizing rich-text inputs and enforcing role-based access control, applications neutralize injection attacks and unauthorized mutations.</p>`,
+    'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80',
+    'published',
+    johnUser.id
+  );
+
+  // Blog 8: Published
+  insertBlogStmt.run(
+    'The Evolution of Design Systems: Tokens, Dark Mode, and Micro-Animations',
+    'evolution-of-design-systems',
+    `<h2>Systematic UI Engineering</h2>
+    <p>A design system is more than a style guide; it is a shared vocabulary between designers and engineers. Semantic CSS custom properties enable seamless dark/light transitions with zero runtime bundle overhead.</p>`,
+    'https://images.unsplash.com/photo-1522542550221-31fd19575a2d?auto=format&fit=crop&w=1200&q=80',
+    'published',
+    sarahUser.id
+  );
+
   const blog1 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('architecting-modern-web-applications');
   const blog2 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('deep-dive-into-multi-level-comment-hierarchies');
   const blog3 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('internal-roadmap-platform-vision');
+  const blog4 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('mastering-sqlite-wal-mode');
+  const blog5 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('modern-frontend-aesthetics-glassmorphism');
+  const blog6 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('building-resilient-microservices');
+  const blog7 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('defensive-api-design-security');
+  const blog8 = db.prepare('SELECT id FROM blogs WHERE slug = ?').get('evolution-of-design-systems');
 
   // Assign Categories & Tags
   const insertBlogCat = db.prepare('INSERT INTO blog_categories (blog_id, category_id) VALUES (?, ?)');
@@ -121,6 +182,11 @@ function seedDatabase() {
   insertBlogCat.run(blog2.id, catWeb.id);
   insertBlogCat.run(blog2.id, catEng.id);
   insertBlogCat.run(blog3.id, catArch.id);
+  insertBlogCat.run(blog4.id, catTech.id);
+  insertBlogCat.run(blog5.id, catWeb.id);
+  insertBlogCat.run(blog6.id, catArch.id);
+  insertBlogCat.run(blog7.id, catTech.id);
+  insertBlogCat.run(blog8.id, catWeb.id);
 
   const insertBlogTag = db.prepare('INSERT INTO blog_tags (blog_id, tag_id) VALUES (?, ?)');
   insertBlogTag.run(blog1.id, tagNode.id);
@@ -128,6 +194,11 @@ function seedDatabase() {
   insertBlogTag.run(blog1.id, tagArch.id);
   insertBlogTag.run(blog2.id, tagJs.id);
   insertBlogTag.run(blog2.id, tagSec.id);
+  insertBlogTag.run(blog4.id, tagSqlite.id);
+  insertBlogTag.run(blog5.id, tagJs.id);
+  insertBlogTag.run(blog6.id, tagNode.id);
+  insertBlogTag.run(blog7.id, tagSec.id);
+  insertBlogTag.run(blog8.id, tagJs.id);
 
   // 6. Seed Multi-Level Comments
   const insertCommentStmt = db.prepare(`

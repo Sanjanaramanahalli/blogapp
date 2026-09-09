@@ -3,11 +3,11 @@
    Vanilla CSS with CSS Variables, Dark/Light Mode, Glassmorphism, and Fluid Typography
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
   /* Color Palette - Modern Indigo / Violet Luxe (Dark default for high impact) */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: 'Outfit', var(--font-sans);
   --font-mono: 'JetBrains Mono', monospace;
 
@@ -89,8 +89,32 @@
   padding: 0;
 }
 
+/* Modern Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-app);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-light);
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: var(--text-primary);
+}
+
 html {
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -451,6 +475,20 @@ img {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
+.search-kbd {
+  position: absolute;
+  right: 0.85rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
 .sort-select {
   padding: 0.75rem 1.25rem;
   border-radius: var(--radius-md);
@@ -622,15 +660,15 @@ img {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: var(--transition);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
   box-shadow: var(--shadow-sm);
   position: relative;
 }
 
 .blog-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
   border-color: var(--border-focus);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.25), 0 0 20px var(--accent-glow);
 }
 
 .blog-card-media {
@@ -1016,4 +1054,35 @@ textarea.form-control {
     right: 1rem;
     left: 1rem;
   }
+}
+
+/* Password Visibility Toggle Button */
+.btn-toggle-pw {
+  position: absolute;
+  right: 0.65rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm, 6px);
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+  user-select: none;
+}
+
+.btn-toggle-pw:hover {
+  color: var(--text-primary, #ffffff);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btn-toggle-pw:active {
+  transform: scale(0.92);
+}
+
+.btn-toggle-pw svg {
+  display: block;
+  pointer-events: none;
 }

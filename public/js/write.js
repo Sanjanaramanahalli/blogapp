@@ -88,7 +88,7 @@ function initCoverUpload() {
 
       try {
         const token = API.getToken();
-        const res = await fetch('/api/uploads/cover', {
+        const res = await fetch('/api/uploads', {
           method: 'POST',
           headers: token ? { 'Authorization': `Bearer ${token}` } : {},
           body: formData

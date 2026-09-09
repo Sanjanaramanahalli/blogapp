@@ -349,6 +349,14 @@ async function loadBlogs() {
                 </span>
               </div>
             </div>
+            ${API.isAdmin() ? `
+              <div class="admin-card-bar" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <span class="role-badge role-admin" style="font-size: 0.7rem;">Admin</span>
+                <button type="button" class="btn btn-danger btn-sm btn-delete-card" onclick="handleCardAdminDelete(${blog.id}, '${escapeHtml(blog.title).replace(/'/g, "\\'")}', '${escapeHtml(blog.author_name || 'User').replace(/'/g, "\\'")}', event)" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;">
+                  🗑️ Delete Post
+                </button>
+              </div>
+            ` : ''}
           </div>
         </article>
       `;
@@ -448,8 +456,29 @@ function renderPagination(pagination) {
   });
 }
 
+// Administrator Card-Level Post Deletion
+async function handleCardAdminDelete(blogId, title, authorName, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const authorSuffix = authorName ? ` written by "${authorName}"` : '';
+  if (!confirm(`Administrator Action: Permanently delete article "${title}"${authorSuffix}? All associated comments and likes will be permanently erased.`)) {
+    return;
+  }
+
+  try {
+    const res = await API.request(`/api/blogs/${blogId}`, { method: 'DELETE' });
+    showToast(res.message || 'Article deleted by administrator.');
+    await loadBlogs();
+  } catch (err) {
+    showToast(err.message || 'Failed to delete article.', 'error');
+  }
+}
+
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await API.checkAuth();
   readUrlParams();
   loadTaxonomy().then(() => {
     renderActiveFilterChips();
@@ -488,4 +517,13 @@ document.addEventListener('DOMContentLoaded', () => {
       loadBlogs();
     });
   }
+
+  // Global shortcut '/' to focus search
+  window.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement !== searchInput && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+      e.preventDefault();
+      searchInput?.focus();
+      searchInput?.select();
+    }
+  });
 });

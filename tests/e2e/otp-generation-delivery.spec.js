@@ -178,16 +178,19 @@ test.describe('[ISSUE-13] OTP Generation and Delivery to Registered Email for Fo
 
     // 2nd request via Resend -> Allowed
     await page.click('#btn-resend-otp');
+    await expect(page.locator('#btn-resend-otp')).toBeEnabled();
     await expect(page.locator('#forgot-success-alert')).toBeVisible();
     await expect(page.locator('#btn-resend-otp')).toHaveText('Resend OTP');
 
     // 3rd request via Resend -> Allowed (Reaches maximum limit of 3)
     await page.click('#btn-resend-otp');
+    await expect(page.locator('#btn-resend-otp')).toBeEnabled();
     await expect(page.locator('#forgot-success-alert')).toBeVisible();
     await expect(page.locator('#btn-resend-otp')).toHaveText('Resend OTP');
 
     // 4th request via Resend -> Exceeds rate limit (429)
     await page.click('#btn-resend-otp');
+    await expect(page.locator('#btn-resend-otp')).toBeEnabled();
 
     // Expected: System restricts further OTP requests and displays rate-limit message
     await expect(page.locator('#forgot-error-alert')).toBeVisible();

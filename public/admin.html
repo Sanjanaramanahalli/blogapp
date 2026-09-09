@@ -105,6 +105,7 @@
           <thead>
             <tr>
               <th>Title</th>
+              <th>Author</th>
               <th>Status</th>
               <th>Categories</th>
               <th>Engagement</th>
@@ -113,7 +114,7 @@
             </tr>
           </thead>
           <tbody id="blogs-table-body">
-            <tr><td colspan="6" style="text-align: center;">Loading articles...</td></tr>
+            <tr><td colspan="7" style="text-align: center;">Loading articles...</td></tr>
           </tbody>
         </table>
       </div>
@@ -178,11 +179,21 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="admin-current-password">Current Password (Required for changes)</label>
-            <input type="password" id="admin-current-password" class="form-control">
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="admin-current-password" class="form-control" style="padding-right: 2.75rem; width: 100%;">
+              <button type="button" id="btn-toggle-admin-curr" class="btn-icon" aria-label="Show password" aria-pressed="false" style="position: absolute; right: 0.65rem; background: transparent; border: none; cursor: pointer; color: var(--text-muted); padding: 0.35rem; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-sm, 6px);" title="Show password">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label" for="admin-new-password">New Password (Leave blank to keep existing)</label>
-            <input type="password" id="admin-new-password" class="form-control">
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="admin-new-password" class="form-control" style="padding-right: 2.75rem; width: 100%;">
+              <button type="button" id="btn-toggle-admin-new" class="btn-icon" aria-label="Show password" aria-pressed="false" style="position: absolute; right: 0.65rem; background: transparent; border: none; cursor: pointer; color: var(--text-muted); padding: 0.35rem; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-sm, 6px);" title="Show password">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
           </div>
           <button type="submit" class="btn btn-primary">Save Profile Changes</button>
         </form>

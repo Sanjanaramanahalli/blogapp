@@ -239,21 +239,20 @@ async function forgotPassword(req, res) {
       VALUES (?, ?, ?, 0)
     `).run(normalizedEmail, otp, expiresAt);
 
-    // Dispatch real email to user's registered inbox via Nodemailer
+    // Dispatch email to user's registered inbox via Nodemailer
     let emailResult = null;
     try {
       emailResult = await sendOtpEmail(normalizedEmail, otp);
     } catch (mailErr) {
-      console.error('[AUTH] Email sending failed:', mailErr);
+      console.error('[AUTH] Email sending failed:', mailErr?.message || mailErr);
     }
 
-    console.log(`[AUTH] Generated OTP for ${normalizedEmail}: ${otp} (Expires: ${expiresAt})`);
+    console.log(`[AUTH] OTP dispatch completed for registered user: ${normalizedEmail}`);
 
     res.status(200).json({
       message: 'OTP has been successfully sent to your registered email address.',
       email: normalizedEmail,
-      previewUrl: emailResult?.previewUrl || null,
-      devOtp: otp // Kept for test automation
+      previewUrl: emailResult?.previewUrl || null
     });
   } catch (err) {
     console.error('Forgot password error:', err);

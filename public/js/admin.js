@@ -104,7 +104,7 @@ async function loadAdminBlogs() {
     const blogs = data.blogs;
 
     if (blogs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No articles found. Click "+ New Article" to create one.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No articles found. Click "+ New Article" to create one.</td></tr>';
       return;
     }
 
@@ -118,6 +118,10 @@ async function loadAdminBlogs() {
             <a href="/blog/${escapeHtml(b.slug)}" style="font-weight: 600; color: var(--text-primary);">
               ${escapeHtml(b.title)}
             </a>
+          </td>
+          <td>
+            <div style="font-weight: 500; color: var(--text-primary);">${escapeHtml(b.author_name || 'Anonymous User')}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(b.author_email || '')}</div>
           </td>
           <td>
             <span class="role-badge ${isPublished ? 'role-reader' : 'role-admin'}">
@@ -147,7 +151,7 @@ async function loadAdminBlogs() {
               <button class="btn btn-secondary btn-sm" onclick="openEditBlogModal(${b.id})">
                 Edit
               </button>
-              <button class="btn btn-danger btn-sm" onclick="openDeleteBlogModal(${b.id}, '${escapeHtml(b.title).replace(/'/g, "\\'")}')">
+              <button class="btn btn-danger btn-sm" onclick="openDeleteBlogModal(${b.id}, '${escapeHtml(b.title).replace(/'/g, "\\'")}', '${escapeHtml(b.author_name || 'User').replace(/'/g, "\\'")}')">
                 Delete
               </button>
             </div>
@@ -157,7 +161,7 @@ async function loadAdminBlogs() {
     }).join('');
   } catch (err) {
     console.error('Error loading admin blogs:', err);
-    tbody.innerHTML = `<tr><td colspan="6" style="color: var(--danger-light); text-align: center;">Failed to load articles.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="color: var(--danger-light); text-align: center;">Failed to load articles.</td></tr>`;
   }
 }
 
@@ -478,9 +482,13 @@ function closeBlogModal() {
 }
 
 // Delete Blog Confirmation Modal
-function openDeleteBlogModal(blogId, blogTitle) {
+function openDeleteBlogModal(blogId, blogTitle, authorName = '') {
   pendingDeleteBlogId = blogId;
-  document.getElementById('delete-blog-title-text').textContent = `Are you sure you want to delete "${blogTitle}"?`;
+  const authorSuffix = authorName ? ` (Author: ${authorName})` : '';
+  const titleEl = document.getElementById('delete-blog-title-text');
+  if (titleEl) {
+    titleEl.textContent = `Are you sure you want to delete "${blogTitle}"${authorSuffix}?`;
+  }
   document.getElementById('delete-blog-modal')?.classList.add('active');
 }
 
@@ -610,6 +618,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       showToast(err.message || 'Failed to update profile.', 'error');
     }
   });
+
+  // Admin password visibility toggles
+  function setupAdminPwToggle(btnId, inputId) {
+    const btn = document.getElementById(btnId);
+    const input = document.getElementById(inputId);
+    if (!btn || !input) return;
+    const SVG_EYE_OPEN = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    const SVG_EYE_OFF = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+    btn.innerHTML = SVG_EYE_OPEN;
+    btn.addEventListener('click', () => {
+      const isPassword = input.getAttribute('type') === 'password';
+      input.setAttribute('type', isPassword ? 'text' : 'password');
+      btn.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
+      btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+      btn.setAttribute('title', isPassword ? 'Hide password' : 'Show password');
+      btn.innerHTML = isPassword ? SVG_EYE_OFF : SVG_EYE_OPEN;
+      btn.style.color = isPassword ? 'var(--accent-light, #38bdf8)' : 'var(--text-muted)';
+    });
+  }
+
+  setupAdminPwToggle('btn-toggle-admin-curr', 'admin-current-password');
+  setupAdminPwToggle('btn-toggle-admin-new', 'admin-new-password');
 
   // Admin Modal Comment Form
   document.getElementById('admin-modal-comment-form')?.addEventListener('submit', handleAdminModalCommentSubmit);

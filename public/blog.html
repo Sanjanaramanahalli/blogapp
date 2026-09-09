@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="/css/rich-text.css">
 </head>
 <body>
+  <!-- Dynamic Top Reading Progress Bar -->
+  <div id="reading-progress-bar" style="position: fixed; top: 0; left: 0; height: 3px; background: var(--accent-gradient); z-index: 9999; width: 0%; transition: width 0.1s ease-out;"></div>
 
   <!-- Sticky Navbar -->
   <header class="navbar">
@@ -116,6 +118,28 @@
       <div class="modal-footer">
         <button class="btn btn-secondary btn-sm" onclick="closeDeleteModal()">Cancel</button>
         <button id="btn-confirm-delete" class="btn btn-danger btn-sm">Delete Permanently</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin / Owner Delete Article Confirmation Modal -->
+  <div class="modal-backdrop" id="delete-article-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--danger-light);">Permanently Delete Article?</h3>
+        <button class="modal-close" onclick="closeDeleteArticleModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="delete-article-warning-text" style="color: var(--text-primary); margin-bottom: 1rem;">
+          Are you sure you want to permanently delete this article?
+        </p>
+        <p style="font-size: 0.875rem; color: var(--danger-light); background: var(--danger-bg); padding: 0.75rem; border-radius: var(--radius-sm);">
+          ⚠️ <strong>Strict Cascade Deletion:</strong> Deleting this article will permanently erase the article, all discussions, replies, and community likes. This action is irreversible.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="closeDeleteArticleModal()">Cancel</button>
+        <button id="btn-confirm-delete-article" class="btn btn-danger btn-sm">Permanently Delete</button>
       </div>
     </div>
   </div>
