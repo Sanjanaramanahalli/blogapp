@@ -82,19 +82,31 @@ if (isPostgres) {
 
 // Fallback to native node:sqlite for local development and offline test suites
 if (!dbInstance) {
-  console.log('📁 [Database] Using native SQLite database at server/data/blog.db');
-  const { DatabaseSync } = require('node:sqlite');
-  const DB_DIR = path.join(__dirname, '..', 'data');
-  if (!fs.existsSync(DB_DIR)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
+  const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+  const DB_DIR = isServerless 
+    ? path.join('/tmp', 'data') 
+    : path.join(__dirname, '..', 'data');
+    
+  console.log(`📁 [Database] Using native SQLite database at ${DB_DIR}/blog.db`);
+  try {
+    if (!fs.existsSync(DB_DIR)) {
+      fs.mkdirSync(DB_DIR, { recursive: true });
+    }
+  } catch (err) {
+    console.warn('Directory creation warning:', err.message);
   }
 
   const DB_PATH = path.join(DB_DIR, 'blog.db');
+  const { DatabaseSync } = require('node:sqlite');
   const sqliteDb = new DatabaseSync(DB_PATH);
 
   // Enable foreign keys and write-ahead logging (WAL)
-  sqliteDb.exec('PRAGMA foreign_keys = ON;');
-  sqliteDb.exec('PRAGMA journal_mode = WAL;');
+  try {
+    sqliteDb.exec('PRAGMA foreign_keys = ON;');
+    sqliteDb.exec('PRAGMA journal_mode = WAL;');
+  } catch (e) {
+    // Ignore pragma errors in constrained environments
+  }
 
   dbInstance = sqliteDb;
   dbInstance.isPostgres = false;
