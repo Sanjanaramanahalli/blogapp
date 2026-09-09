@@ -1,57 +1,49 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "builds": [
+  "rewrites": [
     {
-      "src": "api/index.js",
-      "use": "@vercel/node"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     },
     {
-      "src": "public/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "source": "/auth/(.*)",
+      "destination": "/api/index.js"
     },
     {
-      "src": "/auth/(.*)",
-      "dest": "/api/index.js"
+      "source": "/login",
+      "destination": "/public/login.html"
     },
     {
-      "src": "/login",
-      "dest": "/public/login.html"
+      "source": "/register",
+      "destination": "/public/register.html"
     },
     {
-      "src": "/register",
-      "dest": "/public/register.html"
+      "source": "/profile",
+      "destination": "/public/profile.html"
     },
     {
-      "src": "/profile",
-      "dest": "/public/profile.html"
+      "source": "/admin",
+      "destination": "/public/admin.html"
     },
     {
-      "src": "/admin",
-      "dest": "/public/admin.html"
+      "source": "/write",
+      "destination": "/public/write.html"
     },
     {
-      "src": "/write",
-      "dest": "/public/write.html"
+      "source": "/presentation",
+      "destination": "/public/presentation.html"
     },
     {
-      "src": "/presentation",
-      "dest": "/public/presentation.html"
+      "source": "/blog/:slug",
+      "destination": "/public/blog.html"
     },
     {
-      "src": "/blog/(.*)",
-      "dest": "/public/blog.html"
+      "source": "/",
+      "destination": "/public/index.html"
     },
     {
-      "src": "/(.*)",
-      "dest": "/public/$1"
+      "source": "/:path*",
+      "destination": "/public/:path*"
     }
   ]
 }
