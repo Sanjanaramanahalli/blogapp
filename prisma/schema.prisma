@@ -1,0 +1,168 @@
+// Prisma Schema for ApexBlog
+// Configured for Supabase PostgreSQL production deployment
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int           @id @default(autoincrement())
+  name          String
+  email         String        @unique
+  password_hash String
+  role          String        @default("reader") // 'admin' | 'reader'
+  google_id     String?       @unique
+  linkedin_id   String?       @unique
+  github_id     String?       @unique
+  avatar_url    String?
+  bio           String?       @default("")
+  auth_provider String        @default("local")
+  created_at    DateTime      @default(now())
+
+  blogs         Blog[]
+  comments      Comment[]
+  likes         Like[]
+  saved_blogs   SavedBlog[]
+
+  @@map("users")
+}
+
+model Category {
+  id    Int            @id @default(autoincrement())
+  name  String         @unique
+  slug  String         @unique
+  blogs BlogCategory[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id    Int       @id @default(autoincrement())
+  name  String    @unique
+  slug  String    @unique
+  blogs BlogTag[]
+
+  @@map("tags")
+}
+
+model Blog {
+  id          Int            @id @default(autoincrement())
+  title       String
+  slug        String         @unique
+  body        String
+  cover_image String?
+  video_url   String?
+  edition     String         @default("india") // 'india' | 'world'
+  status      String         @default("draft") // 'draft' | 'published'
+  author_id   Int
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @default(now()) @updatedAt
+
+  author      User           @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  categories  BlogCategory[]
+  tags        BlogTag[]
+  comments    Comment[]
+  likes       Like[]
+  saved_by    SavedBlog[]
+
+  @@index([status])
+  @@index([slug])
+  @@index([edition])
+  @@map("blogs")
+}
+
+model BlogCategory {
+  blog_id     Int
+  category_id Int
+
+  blog        Blog     @relation(fields: [blog_id], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@id([blog_id, category_id])
+  @@map("blog_categories")
+}
+
+model BlogTag {
+  blog_id Int
+  tag_id  Int
+
+  blog    Blog @relation(fields: [blog_id], references: [id], onDelete: Cascade)
+  tag     Tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+  @@id([blog_id, tag_id])
+  @@map("blog_tags")
+}
+
+model Comment {
+  id         Int       @id @default(autoincrement())
+  blog_id    Int
+  user_id    Int
+  parent_id  Int?
+  content    String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now()) @updatedAt
+
+  blog       Blog      @relation(fields: [blog_id], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  parent     Comment?  @relation("CommentReplies", fields: [parent_id], references: [id], onDelete: Cascade)
+  replies    Comment[] @relation("CommentReplies")
+
+  @@index([blog_id])
+  @@index([parent_id])
+  @@map("comments")
+}
+
+model Like {
+  id         Int      @id @default(autoincrement())
+  blog_id    Int
+  user_id    Int
+  created_at DateTime @default(now())
+
+  blog       Blog     @relation(fields: [blog_id], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([blog_id, user_id])
+  @@index([blog_id])
+  @@map("likes")
+}
+
+model SavedBlog {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  blog_id    Int
+  created_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  blog       Blog     @relation(fields: [blog_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, blog_id])
+  @@index([user_id])
+  @@index([blog_id])
+  @@map("saved_blogs")
+}
+
+model PasswordReset {
+  id         Int      @id @default(autoincrement())
+  email      String
+  otp        String
+  expires_at DateTime
+  used       Int      @default(0)
+  created_at DateTime @default(now())
+
+  @@index([email])
+  @@map("password_resets")
+}
+
+model Setting {
+  id         Int      @id @default(autoincrement())
+  key        String   @unique
+  value      String
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("settings")
+}

@@ -23,8 +23,9 @@ test.describe('M1: Authentication & Role-Based Access Control (RBAC)', () => {
   test('Positive: Admin Login & Dashboard Navigation', async ({ page }) => {
     await page.goto('/login');
 
-    // Click demo Admin quick-fill
-    await page.click('#btn-fill-admin');
+    // Fill credentials for registered Admin account
+    await page.fill('#login-email', 'admin@blog.com');
+    await page.fill('#login-password', 'Admin@123456');
     await page.click('#btn-submit-login');
 
     // Should redirect to /admin and display Control Center

@@ -16,8 +16,30 @@ const profileRoutes = require('./routes/profile.routes');
 
 const app = express();
 
-// Standard middleware
-app.use(cors());
+// Dynamic production-ready CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    if (process.env.NODE_ENV !== 'production' || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(new Error('Blocked by CORS policy: Origin not allowed.'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
@@ -74,6 +96,15 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
+// Health check endpoint for Render monitoring
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV || 'development'
+  });
+});
+
 // 404 handler for API routes
 app.use('/api/*', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found.' });
@@ -87,7 +118,11 @@ app.get('*', (req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled server error:', err);
-  res.status(500).json({ error: err.message || 'Internal server error.' });
+  const isProduction = process.env.NODE_ENV === 'production';
+  const errorMessage = isProduction 
+    ? 'An unexpected internal server error occurred.' 
+    : (err.message || 'Internal server error.');
+  res.status(err.status || 500).json({ error: errorMessage });
 });
 
 module.exports = app;

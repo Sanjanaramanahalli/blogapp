@@ -867,7 +867,7 @@ function shareToLinkedIn() {
 
 function shareViaEmail() {
   const subject = encodeURIComponent(currentShareTitle);
-  const body = encodeURIComponent(`Read this article on ApexBlog: ${currentShareUrl}`);
+  const body = encodeURIComponent(`Read this article on TownTalk: ${currentShareUrl}`);
   window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 

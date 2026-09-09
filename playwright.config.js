@@ -16,11 +16,12 @@ module.exports = defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure'
   },
-  webServer: process.env.CI ? {
+  webServer: {
     command: 'node server/server.js',
     url: 'http://127.0.0.1:3000',
+    reuseExistingServer: true,
     timeout: 30000
-  } : undefined,
+  },
   projects: [
     {
       name: 'chromium',

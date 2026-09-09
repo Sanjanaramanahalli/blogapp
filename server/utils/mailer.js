@@ -72,17 +72,17 @@ async function sendOtpEmail(toEmail, otp) {
     return { previewUrl: null };
   }
 
-  const senderAddress = process.env.SMTP_FROM || process.env.EMAIL_USER || process.env.SMTP_USER || '"ApexBlog Security" <security@apexblog.com>';
+  const senderAddress = process.env.SMTP_FROM || process.env.EMAIL_USER || process.env.SMTP_USER || '"TownTalk Security" <security@towntalk.com>';
 
   const mailOptions = {
     from: senderAddress,
     to: toEmail,
-    subject: 'Your ApexBlog Password Reset OTP Code',
+    subject: 'Your TownTalk Password Reset OTP Code',
     text: `Your password reset verification code is: ${otp}. It is valid for 10 minutes. If you did not request this, please ignore this email.`,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 540px; margin: 0 auto; padding: 28px; background: #0f172a; border-radius: 12px; color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.1);">
         <div style="text-align: center; margin-bottom: 24px;">
-          <h2 style="color: #6366f1; margin: 0; font-size: 24px; font-weight: 700;">ApexBlog</h2>
+          <h2 style="color: #6366f1; margin: 0; font-size: 24px; font-weight: 700;">TownTalk</h2>
           <p style="color: #94a3b8; font-size: 13px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">Security Verification</p>
         </div>
         <div style="background: #1e293b; border-radius: 8px; padding: 24px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 24px;">

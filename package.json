@@ -5,14 +5,21 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "dev": "node --watch-path=server server/server.js",
+    "build": "node scripts/build.js",
+    "dev": "node --watch server/server.js",
     "seed": "node server/db/seed.js",
+    "seed:prisma": "node scripts/seed-prisma.js",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate deploy",
     "test": "npx playwright test"
   },
   "keywords": [
     "blog",
     "express",
     "sqlite",
+    "postgresql",
+    "prisma",
+    "supabase",
     "fullstack",
     "rbac",
     "nested-comments"
@@ -20,6 +27,7 @@
   "author": "Engineering Lead",
   "license": "MIT",
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -28,10 +36,12 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^10.0.1",
+    "pg": "^8.13.3",
     "pptxgenjs": "^4.0.1",
     "sanitize-html": "^2.14.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.50.0"
+    "@playwright/test": "^1.50.0",
+    "prisma": "^5.22.0"
   }
 }

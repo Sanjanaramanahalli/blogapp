@@ -1,7 +1,14 @@
 const jwt = require('jsonwebtoken');
 const { db } = require('../db/database');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'blog-platform-super-secret-jwt-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET || (
+  process.env.NODE_ENV === 'production'
+    ? (() => {
+        console.warn('⚠️ WARNING: JWT_SECRET environment variable is missing in production! Please set JWT_SECRET on Render.');
+        return 'apexblog-production-fallback-secret-key-32chars!';
+      })()
+    : 'blog-platform-super-secret-jwt-key-2026'
+);
 
 function authenticate(req, res, next) {
   let token = null;

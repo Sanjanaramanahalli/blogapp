@@ -1,23 +1,115 @@
-const { DatabaseSync } = require('node:sqlite');
+/**
+ * Database Layer for ApexBlog / TownTalk
+ * Supports:
+ * 1. Supabase PostgreSQL via DATABASE_URL in production (Render)
+ * 2. Prisma ORM Client integration
+ * 3. Native SQLite (node:sqlite) for local development and offline testing
+ */
+
 const fs = require('node:fs');
 const path = require('node:path');
 
-const DB_DIR = path.join(__dirname, '..', 'data');
-if (!fs.existsSync(DB_DIR)) {
-  fs.mkdirSync(DB_DIR, { recursive: true });
+const isPostgres = !!(
+  process.env.DATABASE_URL &&
+  (process.env.DATABASE_URL.startsWith('postgres://') || process.env.DATABASE_URL.startsWith('postgresql://')) &&
+  (process.env.NODE_ENV === 'production' || process.env.USE_POSTGRES === 'true' || process.env.DATABASE_URL.includes('supabase.co'))
+);
+
+let dbInstance = null;
+let prismaClient = null;
+
+// Lazy Prisma Client initializer
+function getPrismaClient() {
+  if (!prismaClient) {
+    try {
+      const { PrismaClient } = require('@prisma/client');
+      prismaClient = new PrismaClient();
+    } catch (e) {
+      console.warn('Prisma Client not initialized:', e.message);
+    }
+  }
+  return prismaClient;
 }
 
-const DB_PATH = path.join(DB_DIR, 'blog.db');
-const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
+if (isPostgres) {
+  console.log('🐘 [Database] Configuring PostgreSQL connection for Supabase via DATABASE_URL');
+  try {
+    const { Pool } = require('pg');
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false }
+    });
 
-const db = new DatabaseSync(DB_PATH);
+    dbInstance = {
+      isPostgres: true,
+      pool,
+      prepare(sql) {
+        return {
+          get: async (...params) => {
+            let i = 1;
+            const pgSql = sql.replace(/\?/g, () => `$${i++}`);
+            const res = await pool.query(pgSql, params);
+            return res.rows[0];
+          },
+          all: async (...params) => {
+            let i = 1;
+            const pgSql = sql.replace(/\?/g, () => `$${i++}`);
+            const res = await pool.query(pgSql, params);
+            return res.rows;
+          },
+          run: async (...params) => {
+            let i = 1;
+            let pgSql = sql.replace(/\?/g, () => `$${i++}`);
+            if (/^\s*INSERT\s+INTO/i.test(pgSql) && !/RETURNING/i.test(pgSql)) {
+              pgSql += ' RETURNING id';
+            }
+            const res = await pool.query(pgSql, params);
+            return {
+              lastInsertRowid: res.rows[0]?.id || null,
+              changes: res.rowCount
+            };
+          }
+        };
+      },
+      exec: async (sql) => {
+        await pool.query(sql);
+      }
+    };
+  } catch (pgErr) {
+    console.warn('⚠️ pg driver not loaded, falling back to local SQLite:', pgErr.message);
+  }
+}
 
-// Enable foreign keys and write-ahead logging (WAL)
-db.exec('PRAGMA foreign_keys = ON;');
-db.exec('PRAGMA journal_mode = WAL;');
+// Fallback to native node:sqlite for local development and offline test suites
+if (!dbInstance) {
+  console.log('📁 [Database] Using native SQLite database at server/data/blog.db');
+  const { DatabaseSync } = require('node:sqlite');
+  const DB_DIR = path.join(__dirname, '..', 'data');
+  if (!fs.existsSync(DB_DIR)) {
+    fs.mkdirSync(DB_DIR, { recursive: true });
+  }
+
+  const DB_PATH = path.join(DB_DIR, 'blog.db');
+  const sqliteDb = new DatabaseSync(DB_PATH);
+
+  // Enable foreign keys and write-ahead logging (WAL)
+  sqliteDb.exec('PRAGMA foreign_keys = ON;');
+  sqliteDb.exec('PRAGMA journal_mode = WAL;');
+
+  dbInstance = sqliteDb;
+  dbInstance.isPostgres = false;
+}
+
+const db = dbInstance;
 
 // Initialize schema
 function initSchema() {
+  if (isPostgres) {
+    console.log('ℹ️ [Database] Supabase PostgreSQL schema is managed via Prisma migrations (npx prisma migrate deploy).');
+    return;
+  }
+
+  const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
   if (fs.existsSync(SCHEMA_PATH)) {
     const schemaSql = fs.readFileSync(SCHEMA_PATH, 'utf-8');
     db.exec(schemaSql);
@@ -81,5 +173,7 @@ initSchema();
 
 module.exports = {
   db,
-  initSchema
+  initSchema,
+  isPostgres,
+  getPrismaClient
 };

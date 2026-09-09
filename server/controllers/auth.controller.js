@@ -90,7 +90,7 @@ function login(req, res) {
     const user = db.prepare('SELECT * FROM users WHERE email = ?').get(normalizedEmail);
 
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
+      return res.status(401).json({ error: 'Account not found. Invalid credentials.' });
     }
 
     const isValid = bcrypt.compareSync(password, user.password_hash);
@@ -523,7 +523,7 @@ function socialMockAuthenticate(req, res) {
                            trimmedEmail.toLowerCase().includes('blocked');
     if (isUnauthorized) {
       return res.status(403).json({
-        error: `Access denied. This ${provider === 'google' ? 'Google' : provider} account is not authorized to access ApexBlog.`
+        error: `Access denied. This ${provider === 'google' ? 'Google' : provider} account is not authorized to access TownTalk.`
       });
     }
 
@@ -657,7 +657,7 @@ async function socialAuthCallback(req, res) {
           });
           const tokenData = await tokenRes.json();
           const userRes = await fetch('https://api.github.com/user', {
-            headers: { Authorization: `Bearer ${tokenData.access_token}`, 'User-Agent': 'ApexBlog-App' }
+            headers: { Authorization: `Bearer ${tokenData.access_token}`, 'User-Agent': 'TownTalk-App' }
           });
           const userData = await userRes.json();
           profile = {

@@ -3,7 +3,13 @@
  * Manages HTTP communications, authentication state, theme toggling, and toasts.
  */
 
+const API_BASE = (typeof window !== 'undefined' && (window.__API_URL__ || window.VITE_API_URL || window.API_BASE_URL)) || '';
+
 const API = {
+  getBaseUrl() {
+    return API_BASE;
+  },
+
   // Base request wrapper
   async request(endpoint, options = {}) {
     const headers = options.headers || {};
@@ -17,8 +23,10 @@ const API = {
       headers['Content-Type'] = 'application/json';
     }
 
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
+
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch(url, {
         credentials: 'include',
         ...options,
         headers
@@ -213,7 +221,7 @@ function updateNavbarAuth() {
     adminNavTab.style.display = API.isAdmin() ? 'inline-flex' : 'none';
   }
   if (writeNavTab) {
-    writeNavTab.style.display = user ? 'inline-flex' : 'none';
+    writeNavTab.style.display = API.isAdmin() ? 'inline-flex' : 'none';
   }
 
   if (!navActions) return;
@@ -230,9 +238,13 @@ function updateNavbarAuth() {
       ? `<img src="${user.avatar_url}" alt="${escapeHtml(user.name)}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`
       : initials;
 
+    const writeBtnHtml = API.isAdmin()
+      ? `<a href="/write" class="btn btn-primary btn-sm" id="nav-write-btn" style="display: inline-flex; align-items: center; gap: 0.35rem;">✍️ Write</a>`
+      : '';
+
     navActions.innerHTML = `
       <button class="theme-toggle" title="Toggle Theme">☀️</button>
-      <a href="/write" class="btn btn-primary btn-sm" id="nav-write-btn" style="display: inline-flex; align-items: center; gap: 0.35rem;">✍️ Write</a>
+      ${writeBtnHtml}
       <a href="/profile" class="btn btn-outline btn-sm" id="nav-profile-btn" style="display: inline-flex; align-items: center; gap: 0.35rem;">👤 Profile</a>
       <div class="user-menu">
         <a href="/profile" style="text-decoration: none;">

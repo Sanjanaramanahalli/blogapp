@@ -16,8 +16,16 @@ server/data/*.db-shm
 
 # Environment & logs
 .env
+.env.local
+.env.*.local
+*.env
 *.log
 npm-debug.log*
+
+# Build and deployment artifacts
+dist/
+build/
+.vercel/
 
 # OS specific
 .DS_Store

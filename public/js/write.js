@@ -6,7 +6,7 @@
 let selectedCategoryIds = new Set();
 let uploadedCoverUrl = '';
 
-// Guard authentication
+// Guard authentication & RBAC
 async function checkWriterAccess() {
   await API.checkAuth();
   if (!API.isLoggedIn()) {
@@ -14,6 +14,13 @@ async function checkWriterAccess() {
     setTimeout(() => {
       window.location.href = '/login?redirect=/write';
     }, 800);
+    return false;
+  }
+  if (!API.isAdmin()) {
+    showToast('Administrator privileges are required to create articles.', 'error');
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 1000);
     return false;
   }
   return true;
@@ -87,17 +94,10 @@ function initCoverUpload() {
       formData.append('cover', file);
 
       try {
-        const token = API.getToken();
-        const res = await fetch('/api/uploads', {
+        const data = await API.request('/api/uploads', {
           method: 'POST',
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
           body: formData
         });
-
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || 'Upload failed.');
-        }
 
         uploadedCoverUrl = data.url;
         if (urlInput) urlInput.value = data.url;

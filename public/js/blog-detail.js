@@ -47,7 +47,7 @@ async function loadBlogDetail() {
     const isAuthor = currentUser && currentUser.id === currentBlog.author_id;
     const canManage = isUserAdmin || isAuthor;
 
-    document.title = `${currentBlog.title} — ApexBlog`;
+    document.title = `${currentBlog.title} — TownTalk`;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc && currentBlog.body) {
       const cleanDesc = currentBlog.body.replace(/<[^>]*>/g, '').trim().substring(0, 160);
@@ -165,7 +165,7 @@ async function loadBlogDetail() {
       const isDraft403 = err.status === 403 || (err.message && (err.message.toLowerCase().includes('draft') || err.message.toLowerCase().includes('denied')));
 
       if (is404) {
-        document.title = 'Blog Not Found — ApexBlog';
+        document.title = 'Blog Not Found — TownTalk';
         container.innerHTML = `
           <div class="empty-state not-found-state" style="border-color: var(--border-strong); padding: 4rem 2rem;">
             <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔍</div>
@@ -179,7 +179,7 @@ async function loadBlogDetail() {
           </div>
         `;
       } else if (isDraft403) {
-        document.title = 'Access Denied — ApexBlog';
+        document.title = 'Access Denied — TownTalk';
         container.innerHTML = `
           <div class="empty-state draft-access-state" style="border-color: var(--danger); padding: 4rem 2rem;">
             <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔒</div>
@@ -194,7 +194,7 @@ async function loadBlogDetail() {
           </div>
         `;
       } else {
-        document.title = 'Article Unavailable — ApexBlog';
+        document.title = 'Article Unavailable — TownTalk';
         container.innerHTML = `
           <div class="empty-state" style="border-color: var(--danger); padding: 4rem 2rem;">
             <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚠️</div>
@@ -323,7 +323,7 @@ async function handleShareClick() {
   const shareUrl = window.location.href;
   const shareData = {
     title: currentBlog.title,
-    text: `Check out this article on ApexBlog: ${currentBlog.title}`,
+    text: `Check out this article on TownTalk: ${currentBlog.title}`,
     url: shareUrl
   };
 

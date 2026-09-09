@@ -1,164 +1,222 @@
 # ApexBlog — Full-Stack Publishing & Threaded Discussions Platform
 
-A production-grade, responsive, and secure Full-Stack Blog Application featuring strict Role-Based Access Control (RBAC), rich text authoring with device media uploads, multi-taxonomy discovery (search, multi-category, tags, pagination), binary like/unlike mechanics, and multi-level nested discussions with cascade deletion.
+A production-ready, secure, user-friendly, and responsive Full-Stack Blog Application featuring strict Role-Based Access Control (RBAC), rich text authoring with cloud media uploads, multi-taxonomy discovery (keyword search, multi-category chips, tags, pagination, editions), binary like/unlike mechanics, bookmarking, and multi-level nested discussions with automatic cascade deletion.
 
 ---
 
-## 🌟 Key Highlights & System Architecture
+## 🏗️ Production Architecture
 
-* **Relational ACID Database**: Powered by native `node:sqlite` in WAL (Write-Ahead Logging) mode, enforcing foreign key integrity and strict cascade deletion (`ON DELETE CASCADE`) on both blogs and recursive comments.
-* **Role-Based Access Control (RBAC)**:
-  * **Administrator**: Full authoring, status toggles (Draft vs Published), blog CRUD, cross-post comment moderation, reader account management, profile settings.
-  * **Registered Reader**: Self-registration, liking/unliking blogs, submitting top-level comments and deeply nested replies, editing and deleting own comments.
-  * **Anonymous Visitor**: Read-only browsing, keyword search, multi-taxonomy filtering, viewing like counts and public discussions. Interacting opens a polite authentication modal.
-* **Modern Design System**: Pure Vanilla CSS design tokens with Glassmorphism, dark/light theme switcher, responsive layout grid, and fluid typography (`Outfit` and `Inter` via Google Fonts).
-* **Automated Quality Gate**: Comprehensive Playwright CLI end-to-end browser test suites testing both positive and negative scenarios across all roles.
+ApexBlog is prepared for free-tier cloud deployment using a decoupled full-stack architecture:
+
+```text
+                     +---------------------------+
+                     |    GitHub Source Control  |
+                     +-------------+-------------+
+                                   |
+                  +----------------+----------------+
+                  |                                 |
+                  v                                 v
+      +-----------------------+         +-----------------------+
+      |    Vercel Frontend    |         |    Render Backend     |
+      |   (HTML / CSS / JS)   |         |    (Node / Express)   |
+      |   Custom Routing &    |         |   REST API & Security |
+      |   Glassmorphism UI    |         |   CORS & JWT Auth     |
+      +-----------+-----------+         +-----------+-----------+
+                  |                                 |
+                  +------------ HTTPS / API --------+
+                                                    |
+                                                    v
+                                        +-----------------------+
+                                        |  Supabase PostgreSQL  |
+                                        |   Hosted Database     |
+                                        |      with Prisma      |
+                                        +-----------------------+
+```
+
+| Layer | Technology | Hosting Target | Free Tier Capability |
+| :--- | :--- | :--- | :--- |
+| **Frontend** | HTML5, Vanilla CSS Design System, Modular JS | **Vercel** | Unlimited deployments, fast global CDN edge, client-side routing |
+| **Backend API** | Node.js, Express.js, JWT, Multer, Nodemailer | **Render** | Free web service with automatic GitHub continuous deployment |
+| **Database** | PostgreSQL with Prisma ORM (SQLite for local dev) | **Supabase** | 500 MB free PostgreSQL database with automated backups |
+| **Media Storage** | Cloudinary / Supabase Storage (local fallback) | **Cloudinary / Supabase** | Persistent cloud image uploads surviving server restarts |
 
 ---
 
-## 🚀 Quick Start Guide
+## 👥 User Roles & Access Control
+
+1. **Administrator (`admin`)**:
+   * Secure credential & OAuth authentication.
+   * Full Blog authoring, rich text editing, draft vs. published state toggling, and deletion.
+   * Cross-post comment and reply moderation with recursive cascade deletion.
+   * User directory inspection and account deletion.
+   * Access to executive analytics dashboard (total posts, users, comments, likes).
+2. **Registered Reader (`reader`)**:
+   * Self-registration, secure login, profile inspection and bio editing.
+   * Reading published articles, liking/unliking with atomic toggle.
+   * Submitting root comments and multi-level nested replies.
+   * Editing and deleting own comments and replies.
+   * Bookmarking/saving articles for reading later.
+   * Server-side rejection (403 Forbidden) when attempting administrative actions.
+3. **Anonymous Visitor**:
+   * Public article browsing, multi-category filtering, keyword search, edition toggling.
+   * Reading full articles, reading discussion threads and viewing like counts.
+   * Interacting (liking, commenting, saving) opens a polite authentication modal.
+
+---
+
+## 🚀 Local Development Setup
 
 ### Prerequisites
-* **Node.js**: v20+ (developed and verified on Node.js v24 with native SQLite)
-* **NPM**: v10+
+* **Node.js**: v20 or higher
+* **NPM**: v10 or higher
 
-### 1. Installation
-Clone or navigate to the project directory and install dependencies:
+### 1. Clone & Install
 ```bash
+git clone https://github.com/your-username/fullstack-blog-application.git
+cd fullstack-blog-application
 npm install
 ```
 
-### 2. Initialize and Seed Database
-Run the automated seed script to initialize the schema, cascade rules, default Admin, demo readers, categories, tags, sample articles, likes, and nested comment threads:
+### 2. Configure Environment Variables
+Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
+*(In local development, the application defaults to local SQLite at `server/data/blog.db` with zero external dependencies required).*
+
+### 3. Seed Local Database
 ```bash
 npm run seed
 ```
 
 **Default Demo Credentials:**
 * **Administrator**: `admin@blog.com` / `Admin@123456`
-* **Registered Reader 1**: `john@reader.com` / `Reader@123`
-* **Registered Reader 2**: `sarah@reader.com` / `Reader@123`
+* **Reader 1**: `john@reader.com` / `Reader@123`
+* **Reader 2**: `sarah@reader.com` / `Reader@123`
 
-### 3. Start the Application
+### 4. Start Local Server
 ```bash
 npm run dev
 ```
-Open your browser and navigate to:
-👉 **`http://localhost:3000`**
+Open **`http://localhost:3000`** in your browser.
+
+### 5. Run Test Suites
+* **Backend Integration Suite**:
+  ```bash
+  node tests/backend-integration.test.js
+  ```
+* **Playwright E2E Browser Regression Suite**:
+  ```bash
+  npm test
+  ```
 
 ---
 
-## 🧪 Automated Testing (Playwright CLI)
+## 🌐 Free Production Deployment Guide
 
-Run the full end-to-end headless browser regression suite:
-```bash
-npm test
-```
-Or run the backend integration test suite:
-```bash
-node tests/backend-integration.test.js
-```
+Follow these sequential steps to deploy your application to the cloud at zero cost:
 
----
+### Step 1: Database Setup on Supabase (PostgreSQL)
 
-## 📁 Directory Structure
-
-```
-├── public/                     # Frontend Client
-│   ├── css/
-│   │   ├── styles.css          # Design system, themes, cards, toasts, layouts
-│   │   ├── rich-text.css       # Article typography, social bar, nested comment tree
-│   │   └── admin.css           # Admin dashboard, stats grid, data tables
-│   ├── js/
-│   │   ├── api.js              # API client, JWT storage, theme toggle, toasts
-│   │   ├── app.js              # Public feed, search, category filtering, pagination
-│   │   ├── blog-detail.js      # Article view, reading time, like toggle
-│   │   ├── comments.js         # Recursive comments engine, inline replies, edit, cascade delete
-│   │   └── admin.js            # Admin metrics, CRUD, image upload, moderation, users
-│   ├── uploads/                # Static storage for uploaded cover images
-│   ├── index.html              # Public home feed
-│   ├── blog.html               # Article reading view & discussions
-│   ├── admin.html              # Admin Control Center
-│   ├── login.html              # Sign in page (with 1-click demo logins)
-│   └── register.html           # Public reader sign-up page
-├── server/                     # Backend API & Database
-│   ├── db/
-│   │   ├── database.js         # SQLite connection (WAL, foreign keys)
-│   │   ├── schema.sql          # Relational tables, indexes, cascade rules
-│   │   └── seed.js             # Initial database seeder
-│   ├── middleware/
-│   │   ├── auth.js             # JWT extraction, requireAuth, requireAdmin
-│   │   └── upload.js           # Multer configuration with MIME & size validation
-│   ├── controllers/            # REST controllers (auth, blog, comment, like, user)
-│   ├── routes/                 # Express route definitions
-│   ├── app.js                  # Express application setup
-│   └── server.js               # HTTP server entrypoint
-├── tests/                      # Automated Verification
-│   ├── backend-integration.test.js
-│   └── e2e/
-│       ├── auth-rbac.spec.js           # 6 tests: Reader/Admin auth, RBAC guard, input validation
-│       ├── blogs-publishing.spec.js    # 6 tests: CMS lifecycle, rich-text editor, authoring
-│       ├── blog-feed.spec.js           # 11 tests: Search, taxonomy filter, chip removal, pagination
-│       ├── blog-detail.spec.js         # 6 tests: Semantic HTML, dynamic reading time, 404/403 states
-│       ├── discussions-likes.spec.js   # 5 tests: Atomic likes, threaded comments, cascade delete
-│       ├── file-upload.spec.js         # 6 tests: Multer upload engine, MIME verify, live preview
-│       └── admin-management.spec.js    # 8 tests: Metrics, user management, comment moderation
-├── development_plan.md         # Scrum backlog, milestones, and issue specifications
-├── implementation_plan.md      # Architectural design & consensus panel review
-├── PRESENTATION.md             # Complete 16-slide presentation deck & live demo script
-├── walkthrough.md              # Historical sprint walkthroughs & verification reports
-└── package.json
-```
+1. Sign up or log in to [Supabase](https://supabase.com).
+2. Click **"New project"**, choose an organization, name your project (e.g. `apexblog`), set a strong database password, and select a nearby region.
+3. Once the database is provisioned (1-2 minutes):
+   * Go to **Project Settings** -> **Database**.
+   * Under **Connection string**, select **URI**.
+   * Copy the connection string. It will look like:
+     ```text
+     postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+     ```
+4. In your local terminal, apply the Prisma migrations directly to Supabase:
+   ```bash
+   npx cross-env DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres" npx prisma migrate deploy
+   ```
+5. *(Optional)* Seed the default Administrator and sample articles into Supabase:
+   ```bash
+   npx cross-env DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres" node scripts/seed-prisma.js
+   ```
 
 ---
 
-## 🏆 Sprint & Quality Gate Verification Matrix
+### Step 2: Push Repository to GitHub
 
-| Sprint | Ticket | Domain | Specs / Features | E2E Tests | Status |
-| :---: | :--- | :--- | :--- | :---: | :---: |
-| **Sprint 1** | [ISSUE-01] | Database Architecture | SQLite WAL schema, foreign keys, cascade deletes | 12 API | ✅ Verified |
-| **Sprint 2** | [ISSUE-02] | Authentication & RBAC | JWT auth, role cookies, guest guard, register/login UX | 6 E2E | ✅ Verified |
-| **Sprint 3** | [ISSUE-03] | File Upload Engine | Multer storage, MIME verification, size limit, live preview | 6 E2E | ✅ Verified |
-| **Sprint 4** | [ISSUE-04] | Publishing Engine & CMS | Rich text authoring, draft/publish lifecycle, categories/tags | 6 E2E | ✅ Verified |
-| **Sprint 5** | [ISSUE-05] | Discovery & Public Feed | Debounced search, multi-category filter, chips, pagination | 11 E2E | ✅ Verified |
-| **Sprint 6** | [ISSUE-07] | Binary Likes Engine | Atomic binary like/unlike, duplicate prevention, counts | 2 E2E | ✅ Verified |
-| **Sprint 7** | [ISSUE-08] | Nested Discussions | Recursive comment tree, inline reply, author edit, cascade | 3 E2E | ✅ Verified |
-| **Sprint 8** | [ISSUE-06] | Public Blog Detail View | Semantic `<article>`, `<time>`, reading time, custom 404/403 | 6 E2E | ✅ Verified |
-| **Sprint 9** | [ISSUE-09] | Admin Governance Panel | Metrics grid, reader management, comment moderation | 8 E2E | ✅ Verified |
-| **Sprint 10**| [ISSUE-10] | Playwright Quality Gate | Automated regression test suite across all 7 specs (48 tests) | 48 E2E | ✅ Verified |
-| **Sprint 11**| [ISSUE-11] | Project Presentation & Docs | Complete deck (`PRESENTATION.md`), walkthrough, setup guide | Docs | ✅ Verified |
+1. Create a new repository on [GitHub](https://github.com/new) (e.g. `fullstack-blog-application`).
+2. Add your GitHub remote and push:
+   ```bash
+   git remote add origin https://github.com/YOUR_USERNAME/fullstack-blog-application.git
+   git branch -M main
+   git push -u origin main
+   ```
 
 ---
 
-## 🛡️ API Endpoints Reference
+### Step 3: Deploy Backend API to Render
 
-| Method | Endpoint | Access Level | Description |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Public | Register new Reader account |
-| `POST` | `/api/auth/login` | Public | Login (Admin or Reader) |
-| `POST` | `/api/auth/logout` | Public | Clear auth cookie |
-| `GET` | `/api/auth/me` | Public / Token | Get current authenticated user |
-| `PUT` | `/api/auth/profile` | Authenticated | Update user name, email, or password |
-| `GET` | `/api/blogs` | Public | Get blogs (with search, category, tag, page) |
-| `GET` | `/api/blogs/taxonomy` | Public | Get categories and tags with counts |
-| `GET` | `/api/blogs/:slugOrId`| Public / Draft | Get single article detail |
-| `POST` | `/api/blogs` | Admin Only | Create new article |
-| `PUT` | `/api/blogs/:id` | Admin Only | Update article details |
-| `PATCH`| `/api/blogs/:id/status`| Admin Only | Toggle publish / draft status |
-| `DELETE`| `/api/blogs/:id` | Admin Only | Cascade delete article, comments, and likes |
-| `POST` | `/api/uploads/cover` | Admin Only | Upload cover image file (max 5MB) |
-| `GET` | `/api/blogs/:id/likes` | Public | Get like count and user liked status |
-| `POST` | `/api/blogs/:id/likes/toggle` | Authenticated | Toggle like/unlike atomically |
-| `GET` | `/api/blogs/:id/comments` | Public | Get recursive tree of discussions |
-| `POST` | `/api/blogs/:id/comments` | Authenticated | Post comment or nested reply |
-| `PUT` | `/api/comments/:id` | Author Only | Edit own comment |
-| `DELETE`| `/api/comments/:id` | Author / Admin | Cascade delete comment and all child replies |
-| `GET` | `/api/admin/overview` | Admin Only | Get dashboard metric analytics |
-| `GET` | `/api/admin/users` | Admin Only | List registered reader accounts |
-| `DELETE`| `/api/admin/users/:id`| Admin Only | Delete reader account |
-| `GET` | `/api/admin/comments` | Admin Only | Moderation view of all platform comments |
+1. Sign up or log in to [Render](https://render.com).
+2. Click **"New +"** -> **"Web Service"**.
+3. Connect your GitHub repository.
+4. Fill in the deployment details:
+   * **Name**: `apexblog-api`
+   * **Region**: Choose the region closest to your Supabase project
+   * **Branch**: `main`
+   * **Runtime**: `Node`
+   * **Build Command**: `npm install && npx prisma generate`
+   * **Start Command**: `npm start`
+   * **Instance Type**: `Free`
+5. Click **"Advanced"** -> **"Add Environment Variable"** and configure:
+   * `NODE_ENV` = `production`
+   * `PORT` = `10000`
+   * `DATABASE_URL` = *Your Supabase PostgreSQL URI (from Step 1)*
+   * `DIRECT_URL` = *Your Supabase PostgreSQL URI (from Step 1)*
+   * `JWT_SECRET` = *A strong random secret string (minimum 32 characters)*
+   * `FRONTEND_URL` = *Your Vercel URL, e.g. `https://apexblog.vercel.app` (you can update this after Step 4)*
+   * *(Optional for cloud images)* `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+6. Click **"Create Web Service"**.
+7. Once deployed, note down your Render service URL (e.g. `https://apexblog-api.onrender.com`).
+8. Test the health endpoint in your browser:
+   `https://apexblog-api.onrender.com/api/health` -> should return `{"status":"healthy"}`.
 
 ---
 
-## ⚖️ License
-MIT License. Built for technical showcase and evaluation.
+### Step 4: Deploy Frontend to Vercel
+
+1. Sign up or log in to [Vercel](https://vercel.com).
+2. Click **"Add New..."** -> **"Project"**.
+3. Import your GitHub repository (`fullstack-blog-application`).
+4. Configure project settings:
+   * **Framework Preset**: `Other`
+   * **Root Directory**: `./`
+   * **Build Command**: `npm run build`
+   * **Output Directory**: `public`
+5. In **Environment Variables**, add:
+   * `VITE_API_URL` = `https://apexblog-api.onrender.com` (Your Render backend URL from Step 3)
+6. Click **"Deploy"**.
+7. Once deployed, Vercel will assign you a live production URL (e.g. `https://apexblog.vercel.app`).
+8. Update `FRONTEND_URL` on your Render service dashboard with your exact Vercel URL so CORS allows authenticated browser requests.
+
+---
+
+## 🔒 Security & Production Hardening
+
+* **Role-Based Authorization**: Authoring (`POST /api/blogs`), blog deletion, user account management, and comment moderation strictly enforce `role === 'admin'` on the server side.
+* **Cascading Relational Integrity**: Recursive foreign key deletion cascades (`ON DELETE CASCADE`) guarantee zero orphaned comments, replies, likes, or bookmark records.
+* **Content Sanitization**: Rich text HTML is scrubbed via `sanitize-html` to prevent stored Cross-Site Scripting (XSS).
+* **Controlled CORS**: Origin whitelisting allows only the authorized Vercel domain and development endpoints with credentials.
+* **Clean Error Masking**: Internal server and database error stack traces are suppressed in production mode.
+* **Persistent Media**: Cloudinary and Supabase Storage support eliminate data loss caused by container restarts on ephemeral filesystems.
+
+---
+
+## 📋 Production Verification Checklist
+
+- [ ] **Visitor**: Home page loads articles from Supabase PostgreSQL.
+- [ ] **Visitor**: Search keyword and category filter work smoothly.
+- [ ] **Visitor**: Clicking Like or Comment displays login prompt.
+- [ ] **Reader**: Self-registration works with email and password complexity validation.
+- [ ] **Reader**: Login sets signed JWT; user can like/unlike articles and bookmark them.
+- [ ] **Reader**: Submitting comments and replying to existing comments updates discussion trees.
+- [ ] **Reader**: Reader editing own comment succeeds; editing another user's comment returns 403.
+- [ ] **Reader**: Reader attempting `POST /api/blogs` receives 403 Forbidden.
+- [ ] **Admin**: Admin login reveals Dashboard and Article Management tabs.
+- [ ] **Admin**: Admin can create, publish, unpublish, and delete articles.
+- [ ] **Admin**: Deleting an article cascades to delete all associated comments and likes automatically.

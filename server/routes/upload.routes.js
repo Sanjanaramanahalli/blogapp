@@ -10,8 +10,10 @@ const uploadFields = upload.fields([
   { name: 'avatar', maxCount: 1 }
 ]);
 
+const { uploadToCloudStorage } = require('../utils/storage');
+
 function handleUpload(req, res) {
-  uploadFields(req, res, function (err) {
+  uploadFields(req, res, async function (err) {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({ error: 'Image exceeds maximum allowed size of 5MB.' });
@@ -30,16 +32,21 @@ function handleUpload(req, res) {
       return res.status(400).json({ error: 'No image file provided.' });
     }
 
-    const fileUrl = `/uploads/${uploadedFile.filename}`;
-    const successMsg = uploadedFile.fieldname === 'avatar' 
-      ? 'Profile photo uploaded successfully.' 
-      : 'Image uploaded successfully.';
+    try {
+      const storageResult = await uploadToCloudStorage(uploadedFile);
+      const successMsg = uploadedFile.fieldname === 'avatar' 
+        ? 'Profile photo uploaded successfully.' 
+        : 'Image uploaded successfully.';
 
-    res.status(200).json({
-      message: successMsg,
-      url: fileUrl,
-      filename: uploadedFile.filename
-    });
+      res.status(200).json({
+        message: successMsg,
+        url: storageResult.url,
+        filename: storageResult.filename
+      });
+    } catch (storageErr) {
+      console.error('Storage processing error:', storageErr);
+      res.status(500).json({ error: 'Failed to process uploaded file.' });
+    }
   });
 }
 

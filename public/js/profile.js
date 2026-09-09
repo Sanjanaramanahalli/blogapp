@@ -151,21 +151,10 @@ function initAvatarUpload() {
     }
 
     try {
-      const token = API.getToken();
-      const headers = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const res = await fetch('/api/uploads', {
+      const data = await API.request('/api/uploads', {
         method: 'POST',
-        headers,
         body: formData
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to upload profile photo.');
-      }
 
       uploadedAvatarUrl = data.url;
       if (statusDiv) {
@@ -346,7 +335,7 @@ async function loadSavedArticles() {
           <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🔖</div>
           <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">No Saved Articles Yet</h3>
           <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 400px; margin: 0 auto 1.5rem;">
-            When you find interesting news or blog stories on ApexBlog, click the <strong>Save</strong> button to bookmark them here.
+            When you find interesting news or blog stories on TownTalk, click the <strong>Save</strong> button to bookmark them here.
           </p>
           <a href="/" class="btn btn-primary btn-sm">Explore Articles</a>
         </div>
