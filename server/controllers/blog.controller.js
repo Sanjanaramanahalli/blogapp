@@ -1,4 +1,4 @@
-const sanitizeHtml = require('sanitize-html');
+const sanitize = require('../utils/sanitizer');
 const { db } = require('../db/database');
 
 // Helper to generate a clean URL slug
@@ -16,19 +16,7 @@ function slugify(text) {
 
 // Sanitize rich text HTML
 function cleanHtml(html) {
-  return sanitizeHtml(html, {
-    allowedTags: sanitizeHtml.defaults.allowedTags.concat([
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'u', 's', 'blockquote', 'code', 'pre', 'hr'
-    ]),
-    allowedAttributes: {
-      ...sanitizeHtml.defaults.allowedAttributes,
-      img: ['src', 'alt', 'title', 'width', 'height', 'loading'],
-      a: ['href', 'name', 'target', 'rel'],
-      code: ['class'],
-      pre: ['class']
-    },
-    allowedSchemes: ['http', 'https', 'data']
-  });
+  return sanitize(html);
 }
 
 // Helper to attach categories and tags to blogs

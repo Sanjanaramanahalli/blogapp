@@ -36,3 +36,4 @@ public/uploads/*
 !public/uploads/.gitkeep
 tests/e2e/fixtures/
 
+.vercel
