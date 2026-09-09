@@ -214,12 +214,12 @@ async function submitArticle(status = 'published') {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('btn-publish')?.addEventListener('click', () => submitArticle('published'));
+  document.getElementById('btn-save-draft')?.addEventListener('click', () => submitArticle('draft'));
+
   const hasAccess = await checkWriterAccess();
   if (!hasAccess) return;
 
   loadCategories();
   initCoverUpload();
-
-  document.getElementById('btn-publish')?.addEventListener('click', () => submitArticle('published'));
-  document.getElementById('btn-save-draft')?.addEventListener('click', () => submitArticle('draft'));
 });

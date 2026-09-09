@@ -12,6 +12,7 @@ const directCommentRoutes = require('./routes/direct-comment.routes');
 const likeRoutes = require('./routes/like.routes');
 const userRoutes = require('./routes/user.routes');
 const uploadRoutes = require('./routes/upload.routes');
+const profileRoutes = require('./routes/profile.routes');
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/blogs/:blogId/comments', commentRoutes);
 app.use('/api/blogs/:blogId/likes', likeRoutes);
 app.use('/api/comments', directCommentRoutes);
 app.use('/api/admin', userRoutes);
+app.use('/api/user', profileRoutes);
 app.use('/api/uploads', uploadRoutes);
 
 // Single Page HTML route mappings
@@ -46,6 +48,10 @@ app.get('/login', (req, res) => {
 
 app.get('/register', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'register.html'));
+});
+
+app.get('/profile', (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'profile.html'));
 });
 
 app.get('/admin', (req, res) => {

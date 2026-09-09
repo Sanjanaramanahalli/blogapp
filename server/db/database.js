@@ -41,6 +41,9 @@ function initSchema() {
     if (!userCols.includes('avatar_url')) {
       db.exec("ALTER TABLE users ADD COLUMN avatar_url TEXT;");
     }
+    if (!userCols.includes('bio')) {
+      db.exec("ALTER TABLE users ADD COLUMN bio TEXT DEFAULT '';");
+    }
     if (!userCols.includes('auth_provider')) {
       db.exec("ALTER TABLE users ADD COLUMN auth_provider TEXT DEFAULT 'local';");
     }
@@ -54,6 +57,21 @@ function initSchema() {
     if (!blogCols.includes('video_url')) {
       db.exec("ALTER TABLE blogs ADD COLUMN video_url TEXT;");
     }
+
+    // Ensure saved_blogs table exists
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS saved_blogs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        blog_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, blog_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE
+      );
+      CREATE INDEX IF NOT EXISTS idx_saved_blogs_user_id ON saved_blogs(user_id);
+      CREATE INDEX IF NOT EXISTS idx_saved_blogs_blog_id ON saved_blogs(blog_id);
+    `);
   } catch (err) {
     console.error('Migration error:', err);
   }

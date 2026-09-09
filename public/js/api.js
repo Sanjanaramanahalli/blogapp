@@ -226,11 +226,18 @@ function updateNavbarAuth() {
       .substring(0, 2)
       .toUpperCase();
 
+    const avatarHtml = user.avatar_url 
+      ? `<img src="${user.avatar_url}" alt="${escapeHtml(user.name)}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`
+      : initials;
+
     navActions.innerHTML = `
       <button class="theme-toggle" title="Toggle Theme">☀️</button>
       <a href="/write" class="btn btn-primary btn-sm" id="nav-write-btn" style="display: inline-flex; align-items: center; gap: 0.35rem;">✍️ Write</a>
+      <a href="/profile" class="btn btn-outline btn-sm" id="nav-profile-btn" style="display: inline-flex; align-items: center; gap: 0.35rem;">👤 Profile</a>
       <div class="user-menu">
-        <div class="user-avatar" title="${escapeHtml(user.name)}">${initials}</div>
+        <a href="/profile" style="text-decoration: none;">
+          <div class="user-avatar" title="${escapeHtml(user.name)}" style="overflow: hidden;">${avatarHtml}</div>
+        </a>
         <span class="role-badge role-${user.role}">${user.role}</span>
         <button id="btn-logout" class="btn btn-outline btn-sm" title="Log out">Sign out</button>
       </div>

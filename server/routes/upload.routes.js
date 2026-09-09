@@ -6,7 +6,8 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 const uploadFields = upload.fields([
   { name: 'image', maxCount: 1 },
   { name: 'cover', maxCount: 1 },
-  { name: 'file', maxCount: 1 }
+  { name: 'file', maxCount: 1 },
+  { name: 'avatar', maxCount: 1 }
 ]);
 
 function handleUpload(req, res) {
@@ -21,7 +22,8 @@ function handleUpload(req, res) {
     const uploadedFile = req.file || (req.files && (
       (req.files.image && req.files.image[0]) ||
       (req.files.cover && req.files.cover[0]) ||
-      (req.files.file && req.files.file[0])
+      (req.files.file && req.files.file[0]) ||
+      (req.files.avatar && req.files.avatar[0])
     ));
 
     if (!uploadedFile) {
@@ -29,8 +31,12 @@ function handleUpload(req, res) {
     }
 
     const fileUrl = `/uploads/${uploadedFile.filename}`;
+    const successMsg = uploadedFile.fieldname === 'avatar' 
+      ? 'Profile photo uploaded successfully.' 
+      : 'Image uploaded successfully.';
+
     res.status(200).json({
-      message: 'Cover image uploaded successfully.',
+      message: successMsg,
       url: fileUrl,
       filename: uploadedFile.filename
     });
