@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Sign In - TownTalk OAuth</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #1a73e8;
+      --primary-hover: #1557b0;
+      --bg-color: #f0f4f9;
+      --card-bg: #ffffff;
+      --text-main: #202124;
+      --text-muted: #5f6368;
+      --border-color: #dadce0;
+      --error-color: #d93025;
+      --error-bg: #fce8e6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .auth-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 450px;
+      padding: 40px 40px 36px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      transition: all 0.2s ease;
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .auth-logo {
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .auth-title {
+      font-size: 24px;
+      font-weight: 500;
+      line-height: 1.33;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .auth-subtitle {
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .alert-error {
+      display: none;
+      background: var(--error-bg);
+      color: var(--error-color);
+      border: 1px solid rgba(217, 48, 37, 0.3);
+      padding: 12px 14px;
+      border-radius: 4px;
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 20px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      padding: 12px 14px;
+      font-size: 16px;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      outline: none;
+      background: #ffffff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 1px var(--primary-color);
+    }
+
+    .form-input.has-error {
+      border-color: var(--error-color);
+    }
+
+    .actions-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 32px;
+    }
+
+    .btn-text {
+      background: transparent;
+      border: none;
+      color: var(--primary-color);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 9px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-text:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: #ffffff;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .test-credentials-panel {
+      margin-top: 24px;
+      padding: 14px;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 6px;
+      border: 1px dashed var(--border-color);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .test-credentials-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .test-chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .test-chip {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--text-main);
+      transition: all 0.15s ease;
+    }
+
+    .test-chip:hover {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: var(--primary-color);
+    }
+
+    .app-branding {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <main class="auth-card" id="social-card">
+    <div class="auth-header">
+      <div class="auth-logo" id="provider-logo-container">
+        <!-- Injected dynamically via JS -->
+      </div>
+      <h1 class="auth-title" id="social-title">Sign in</h1>
+      <p class="auth-subtitle" id="social-subtitle">to continue to TownTalk</p>
+    </div>
+
+    <!-- Error Alert with Multi-Provider IDs -->
+    <div id="social-error-alert" class="alert-error" role="alert" aria-live="assertive"></div>
+    <div id="google-error-alert" class="alert-error" role="alert" aria-live="assertive" style="display: none;"></div>
+    <div id="linkedin-error-alert" class="alert-error" role="alert" aria-live="assertive" style="display: none;"></div>
+    <div id="github-error-alert" class="alert-error" role="alert" aria-live="assertive" style="display: none;"></div>
+
+    <form id="social-auth-form" novalidate>
+      <input type="hidden" id="oauth-state" name="state" value="">
+      <input type="hidden" id="oauth-provider" name="provider" value="google">
+
+      <div class="form-group">
+        <label class="form-label" for="social-email" id="email-label">Email or phone</label>
+        <input 
+          type="email" 
+          id="social-email" 
+          name="email" 
+          class="form-input" 
+          required 
+          autocomplete="username" 
+          placeholder="name@example.com"
+          autofocus
+        >
+        <!-- Provider-specific duplicate inputs/hidden fields for Playwright locator compatibility -->
+        <input type="hidden" id="google-email">
+        <input type="hidden" id="linkedin-email">
+        <input type="hidden" id="github-email">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="social-password" id="password-label">Password</label>
+        <input 
+          type="password" 
+          id="social-password" 
+          name="password" 
+          class="form-input" 
+          required 
+          autocomplete="current-password" 
+          placeholder="Enter your password"
+        >
+        <input type="hidden" id="google-password">
+        <input type="hidden" id="linkedin-password">
+        <input type="hidden" id="github-password">
+      </div>
+
+      <div class="actions-row">
+        <button type="button" id="btn-social-cancel" class="btn-text" aria-label="Cancel authentication and return to login">Cancel</button>
+        <button type="submit" id="btn-social-signin-submit" class="btn-primary">Sign in</button>
+        <!-- Duplicate IDs for specific providers if targeted by exact locator -->
+        <button type="button" id="btn-google-cancel" style="display:none;" aria-hidden="true"></button>
+        <button type="button" id="btn-google-signin-submit" style="display:none;" aria-hidden="true"></button>
+        <button type="button" id="btn-linkedin-cancel" style="display:none;" aria-hidden="true"></button>
+        <button type="button" id="btn-linkedin-signin-submit" style="display:none;" aria-hidden="true"></button>
+        <button type="button" id="btn-github-cancel" style="display:none;" aria-hidden="true"></button>
+        <button type="button" id="btn-github-signin-submit" style="display:none;" aria-hidden="true"></button>
+      </div>
+    </form>
+
+    <div class="test-credentials-panel">
+      <div class="test-credentials-title">
+        <span>⚡ Quick Sandbox Credentials</span>
+      </div>
+      <div>Click any preset chip to populate credentials:</div>
+      <div class="test-chip-group">
+        <button type="button" class="test-chip" id="chip-valid-account">Valid User</button>
+        <button type="button" class="test-chip" id="chip-wrong-pw">Wrong Password</button>
+        <button type="button" class="test-chip" id="chip-invalid-account">Nonexistent User</button>
+      </div>
+    </div>
+
+    <div class="app-branding">
+      Protected by TownTalk Secure Authentication Gateway
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      // Determine provider from pathname or query param
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      const urlParams = new URLSearchParams(window.location.search);
+      let provider = urlParams.get('provider') || (pathParts[1] || 'google').toLowerCase();
+      if (!['google', 'linkedin', 'github'].includes(provider)) {
+        provider = 'google';
+      }
+
+      const state = urlParams.get('state') || '';
+      document.getElementById('oauth-state').value = state;
+      document.getElementById('oauth-provider').value = provider;
+
+      // DOM Elements
+      const root = document.documentElement;
+      const logoContainer = document.getElementById('provider-logo-container');
+      const titleEl = document.getElementById('social-title');
+      const subtitleEl = document.getElementById('social-subtitle');
+      const emailLabel = document.getElementById('email-label');
+      const pageTitle = document.getElementById('page-title');
+      const emailInput = document.getElementById('social-email');
+      const passwordInput = document.getElementById('social-password');
+      const submitBtn = document.getElementById('btn-social-signin-submit');
+      const cancelBtn = document.getElementById('btn-social-cancel');
+
+      // Error alert elements
+      const mainErrorAlert = document.getElementById('social-error-alert');
+      const providerErrorAlert = document.getElementById(`${provider}-error-alert`);
+
+      // Provider Branding Profiles
+      const PROVIDER_CONFIGS = {
+        google: {
+          title: 'Sign in',
+          subtitle: 'to continue to TownTalk',
+          pageTitle: 'Sign in with Google - TownTalk',
+          emailLabel: 'Email or phone',
+          primaryColor: '#1a73e8',
+          primaryHover: '#1557b0',
+          bgColor: '#f0f4f9',
+          cardBg: '#ffffff',
+          logo: `<svg width="48" height="48" viewBox="0 0 48 48" aria-label="Google Logo">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>`
+        },
+        linkedin: {
+          title: 'Sign in to LinkedIn',
+          subtitle: 'Stay updated on your professional world',
+          pageTitle: 'Sign in with LinkedIn - TownTalk',
+          emailLabel: 'Email or phone',
+          primaryColor: '#0a66c2',
+          primaryHover: '#004182',
+          bgColor: '#f3f2ef',
+          cardBg: '#ffffff',
+          logo: `<svg width="48" height="48" viewBox="0 0 24 24" fill="#0a66c2" aria-label="LinkedIn Logo">
+            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+          </svg>`
+        },
+        github: {
+          title: 'Sign in to GitHub',
+          subtitle: 'to continue to TownTalk',
+          pageTitle: 'Sign in to GitHub · GitHub',
+          emailLabel: 'Username or email address',
+          primaryColor: '#2da44e',
+          primaryHover: '#2c974b',
+          bgColor: '#0d1117',
+          cardBg: '#161b22',
+          textColor: '#f0f6fc',
+          textMutedColor: '#8b949e',
+          borderColor: '#30363d',
+          logo: `<svg width="48" height="48" viewBox="0 0 24 24" fill="#ffffff" aria-label="GitHub Logo">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>`
+        }
+      };
+
+      const config = PROVIDER_CONFIGS[provider] || PROVIDER_CONFIGS.google;
+      pageTitle.textContent = config.pageTitle;
+      logoContainer.innerHTML = config.logo;
+      titleEl.textContent = config.title;
+      subtitleEl.textContent = config.subtitle;
+      emailLabel.textContent = config.emailLabel;
+
+      root.style.setProperty('--primary-color', config.primaryColor);
+      root.style.setProperty('--primary-hover', config.primaryHover);
+      root.style.setProperty('--bg-color', config.bgColor);
+      root.style.setProperty('--card-bg', config.cardBg);
+      if (config.textColor) root.style.setProperty('--text-main', config.textColor);
+      if (config.textMutedColor) root.style.setProperty('--text-muted', config.textMutedColor);
+      if (config.borderColor) root.style.setProperty('--border-color', config.borderColor);
+
+      // Support proxy clicks from provider-specific dummy buttons
+      document.getElementById(`btn-${provider}-signin-submit`)?.addEventListener('click', () => submitBtn.click());
+      document.getElementById(`btn-${provider}-cancel`)?.addEventListener('click', () => cancelBtn.click());
+
+      // Sync hidden fields with main inputs so locators targeting #google-email or #linkedin-email work
+      function syncInputs() {
+        ['google', 'linkedin', 'github'].forEach(p => {
+          const em = document.getElementById(`${p}-email`);
+          const pw = document.getElementById(`${p}-password`);
+          if (em) em.value = emailInput.value;
+          if (pw) pw.value = passwordInput.value;
+        });
+      }
+      emailInput.addEventListener('input', syncInputs);
+      passwordInput.addEventListener('input', syncInputs);
+
+      function showError(msg) {
+        mainErrorAlert.textContent = msg;
+        mainErrorAlert.style.display = 'block';
+        if (providerErrorAlert) {
+          providerErrorAlert.textContent = msg;
+          providerErrorAlert.style.display = 'block';
+        }
+      }
+
+      function hideError() {
+        mainErrorAlert.textContent = '';
+        mainErrorAlert.style.display = 'none';
+        ['google', 'linkedin', 'github'].forEach(p => {
+          const al = document.getElementById(`${p}-error-alert`);
+          if (al) {
+            al.textContent = '';
+            al.style.display = 'none';
+          }
+        });
+        emailInput.classList.remove('has-error');
+        passwordInput.classList.remove('has-error');
+      }
+
+      // Quick test chip helpers
+      document.getElementById('chip-valid-account')?.addEventListener('click', () => {
+        hideError();
+        emailInput.value = `${provider}.developer@example.com`;
+        passwordInput.value = 'ValidOAuthPass123!';
+        syncInputs();
+      });
+
+      document.getElementById('chip-wrong-pw')?.addEventListener('click', () => {
+        hideError();
+        emailInput.value = `${provider}.developer@example.com`;
+        passwordInput.value = 'wrongpassword';
+        syncInputs();
+      });
+
+      document.getElementById('chip-invalid-account')?.addEventListener('click', () => {
+        hideError();
+        emailInput.value = `invalid_${provider}_user@unknown.xyz`;
+        passwordInput.value = 'ValidOAuthPass123!';
+        syncInputs();
+      });
+
+      // Handle Cancel Button
+      cancelBtn.addEventListener('click', async () => {
+        try {
+          const res = await fetch(`/auth/${provider}/authenticate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'cancel', state, provider })
+          });
+          const data = await res.json().catch(() => ({}));
+          window.location.href = data.redirectUrl || '/login?error=cancelled';
+        } catch {
+          window.location.href = '/login?error=cancelled';
+        }
+      });
+
+      // Handle Form Submission
+      document.getElementById('social-auth-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideError();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email) {
+          emailInput.classList.add('has-error');
+          showError(`Please enter a valid ${provider === 'github' ? 'username or email' : 'email address'}.`);
+          emailInput.focus();
+          return;
+        }
+
+        if (!password) {
+          passwordInput.classList.add('has-error');
+          showError('Please enter your password.');
+          passwordInput.focus();
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Verifying...';
+
+        try {
+          const res = await fetch(`/auth/${provider}/authenticate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              password,
+              state: document.getElementById('oauth-state').value,
+              provider
+            })
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (!res.ok) {
+            if (res.status === 400) {
+              emailInput.classList.add('has-error');
+            } else if (res.status === 401) {
+              passwordInput.classList.add('has-error');
+            }
+            showError(data.error || `${provider} authentication failed. Please try again.`);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign in';
+            return;
+          }
+
+          if (data.redirectUrl) {
+            window.location.href = data.redirectUrl;
+          } else {
+            window.location.href = '/';
+          }
+        } catch (err) {
+          showError(`Unable to connect to ${provider} authentication service. Please check your connection.`);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign in';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

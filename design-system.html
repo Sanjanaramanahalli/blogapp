@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexKanban Design System & Component Library</title>
+  <link rel="stylesheet" href="/css/kanban-design-system.css">
+  <style>
+    .ds-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: var(--space-8) var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-12);
+    }
+    .ds-section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      background: var(--bg-surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      box-shadow: var(--shadow-sm);
+    }
+    .ds-section-header {
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: var(--space-4);
+    }
+    .ds-section-title {
+      font-family: var(--font-display);
+      font-size: var(--font-2xl);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .ds-section-desc {
+      font-size: var(--font-base);
+      color: var(--text-secondary);
+      margin-top: var(--space-1);
+    }
+    .ds-swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-4);
+    }
+    .ds-swatch-card {
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--bg-surface-2);
+    }
+    .ds-swatch-preview {
+      height: 64px;
+      width: 100%;
+    }
+    .ds-swatch-info {
+      padding: var(--space-3);
+      font-size: var(--font-xs);
+    }
+    .ds-swatch-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .ds-swatch-code {
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+    .ds-type-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .ds-type-table th, .ds-type-table td {
+      padding: var(--space-3) var(--space-4);
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .ds-type-table th {
+      font-size: var(--font-xs);
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .ds-showcase-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+    .ds-interactive-board {
+      display: flex;
+      gap: var(--space-5);
+      overflow-x: auto;
+      padding: var(--space-4) 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Showcase Navigation -->
+  <header class="kb-topbar">
+    <a href="#" class="kb-brand">
+      <div class="kb-brand-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="3" y="3" width="7" height="18" rx="2"></rect>
+          <rect x="14" y="3" width="7" height="11" rx="2"></rect>
+        </svg>
+      </div>
+      <span>ApexKanban Design System</span>
+    </a>
+
+    <div class="kb-topbar-actions">
+      <input type="text" class="kb-input" placeholder="🔍 Search components..." style="width: 220px; font-size: 13px;">
+      <button class="kb-btn kb-btn-secondary" id="themeToggleBtn" onclick="toggleTheme()">
+        🌙 Theme Toggle
+      </button>
+      <a href="https://github.com/Sanjanaramanahalli/blogapp" target="_blank" class="kb-btn kb-btn-primary">
+        GitHub Specs ↗
+      </a>
+    </div>
+  </header>
+
+  <main class="ds-container">
+
+    <!-- Hero Title -->
+    <div>
+      <h1 style="font-family: var(--font-display); font-size: var(--font-3xl); font-weight: 800; color: var(--text-primary);">
+        ApexKanban UI/UX Design System Layout
+      </h1>
+      <p style="font-size: var(--font-lg); color: var(--text-secondary); margin-top: var(--space-2);">
+        Tactile physical layout, 4px baseline spacing tokens, calibrated HSL color duality, and component architecture for simple, high-velocity Kanban task orchestration.
+      </p>
+    </div>
+
+    <!-- Section 1: Color Tokens -->
+    <section class="ds-section">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">1. Semantic Color Palettes & Tokens</h2>
+        <p class="ds-section-desc">Calibrated color hierarchy supporting automatic Light and Obsidian Dark theme switching.</p>
+      </div>
+
+      <h3 style="font-size: var(--font-base); font-weight: 700;">Priority Semantic Levels</h3>
+      <div class="ds-swatch-grid">
+        <div class="ds-swatch-card">
+          <div class="ds-swatch-preview" style="background: var(--priority-p0-bg); border-bottom: 3px solid var(--priority-p0-text);"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">P0: Critical / Blocker</div>
+            <div class="ds-swatch-code">--priority-p0-text</div>
+          </div>
+        </div>
+        <div class="ds-swatch-card">
+          <div class="ds-swatch-preview" style="background: var(--priority-p1-bg); border-bottom: 3px solid var(--priority-p1-text);"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">P1: High Priority</div>
+            <div class="ds-swatch-code">--priority-p1-text</div>
+          </div>
+        </div>
+        <div class="ds-swatch-card">
+          <div class="ds-swatch-preview" style="background: var(--priority-p2-bg); border-bottom: 3px solid var(--priority-p2-text);"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">P2: Medium Priority</div>
+            <div class="ds-swatch-code">--priority-p2-text</div>
+          </div>
+        </div>
+        <div class="ds-swatch-card">
+          <div class="ds-swatch-preview" style="background: var(--priority-p3-bg); border-bottom: 3px solid var(--priority-p3-text);"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">P3: Low Priority</div>
+            <div class="ds-swatch-code">--priority-p3-text</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size: var(--font-base); font-weight: 700; margin-top: var(--space-4);">Column Status Indicators</h3>
+      <div class="ds-swatch-grid">
+        <div class="ds-swatch-card">
+          <div class="ds-swatch-preview" style="background: var(--col-backlog);"></div>
+          <div class="ds-swatch-info"><div class="ds-swatch-name">Backlog</div><div class="ds-swatch-code">--col-backlog (#8b5cf6)</div></div>
+        </div>
+        <div class="ds-swatch-card">
+          <div class="ds-swatch-preview" style="background: var(--col-todo);"></div>
+          <div class="ds-swatch-info"><div class="ds-swatch-name">To Do</div><div class="ds-swatch-code">--col-todo (#0ea5e9)</div></div>
+        </div>
+        <div class="ds-swatch-card">
+          <div class="ds-swatch-preview" style="background: var(--col-in-progress);"></div>
+          <div class="ds-swatch-info"><div class="ds-swatch-name">In Progress</div><div class="ds-swatch-code">--col-in-progress (#f59e0b)</div></div>
+        </div>
+        <div class="ds-swatch-card">
+          <div class="ds-swatch-preview" style="background: var(--col-in-review);"></div>
+          <div class="ds-swatch-info"><div class="ds-swatch-name">Code Review</div><div class="ds-swatch-code">--col-in-review (#6366f1)</div></div>
+        </div>
+        <div class="ds-swatch-card">
+          <div class="ds-swatch-preview" style="background: var(--col-done);"></div>
+          <div class="ds-swatch-info"><div class="ds-swatch-name">Done / Shipped</div><div class="ds-swatch-code">--col-done (#10b981)</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Typography Scale -->
+    <section class="ds-section">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">2. Typographic Scale & Font Pairing</h2>
+        <p class="ds-section-desc">Display (Outfit), Body UI (Inter), and Monospace Task Key (JetBrains Mono).</p>
+      </div>
+
+      <table class="ds-type-table">
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Size / Line-Height</th>
+            <th>Weight</th>
+            <th>Visual Preview</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>--font-3xl</code></td>
+            <td>28px / 34px</td>
+            <td>700 Bold</td>
+            <td><span style="font-family: var(--font-display); font-size: var(--font-3xl); font-weight: 700;">Board Workspace Title</span></td>
+          </tr>
+          <tr>
+            <td><code>--font-2xl</code></td>
+            <td>22px / 28px</td>
+            <td>600 SemiBold</td>
+            <td><span style="font-family: var(--font-display); font-size: var(--font-2xl); font-weight: 600;">Section Headline</span></td>
+          </tr>
+          <tr>
+            <td><code>--font-lg</code></td>
+            <td>16px / 22px</td>
+            <td>600 SemiBold</td>
+            <td><span style="font-family: var(--font-body); font-size: var(--font-lg); font-weight: 600;">Column Header Title</span></td>
+          </tr>
+          <tr>
+            <td><code>--font-base</code></td>
+            <td>14px / 20px</td>
+            <td>500 Medium</td>
+            <td><span style="font-family: var(--font-body); font-size: var(--font-base);">Task Card Title & Body Copy</span></td>
+          </tr>
+          <tr>
+            <td><code>--font-sm</code></td>
+            <td>12px / 16px</td>
+            <td>500 Medium</td>
+            <td><span style="font-family: var(--font-body); font-size: var(--font-sm); color: var(--text-secondary);">Task Description Snippet & Metadata</span></td>
+          </tr>
+          <tr>
+            <td><code>--font-xs</code></td>
+            <td>11px / 14px</td>
+            <td>600 SemiBold</td>
+            <td><span style="font-family: var(--font-mono); font-size: var(--font-xs); font-weight: 600;">KB-104 (Task Key Tabular Badge)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Section 3: Interactive Kanban Column & Task Card Layouts -->
+    <section class="ds-section">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">3. Live Kanban Board Layout & Card States</h2>
+        <p class="ds-section-desc">Demonstration of normal cards, hover state, active drag-and-drop state, ghost placeholder, and insertion guide line.</p>
+      </div>
+
+      <!-- Filter Sub-header demo -->
+      <div class="kb-filter-bar" style="border-radius: var(--radius-lg); margin-bottom: var(--space-4);">
+        <div class="kb-filter-chips">
+          <button class="kb-chip active">All Tasks (12)</button>
+          <button class="kb-chip">My Assigned (4)</button>
+          <button class="kb-chip">🔥 Urgent Only</button>
+          <button class="kb-chip">⚙️ Backend</button>
+          <button class="kb-chip">🎨 Frontend</button>
+        </div>
+        <div style="font-size: var(--font-xs); color: var(--text-muted);">
+          Total Story Points: <strong style="color: var(--brand-primary);">38 SP</strong>
+        </div>
+      </div>
+
+      <div class="ds-interactive-board">
+
+        <!-- Column 1: Ready To Do -->
+        <div class="kb-column">
+          <div class="kb-column-header">
+            <div class="kb-column-title-group">
+              <span class="kb-status-dot" style="background: var(--col-todo);"></span>
+              <span class="kb-column-title">Ready To Do</span>
+            </div>
+            <span class="kb-wip-badge">2 / 5</span>
+          </div>
+          <div class="kb-column-body">
+
+            <!-- Card: Rest State -->
+            <div class="kb-card">
+              <div class="kb-card-header">
+                <span class="kb-task-key">KB-101</span>
+                <span class="kb-priority kb-priority-p1">⚡ High</span>
+              </div>
+              <h4 class="kb-card-title">Implement Secure JWT Revocation Table</h4>
+              <p class="kb-card-desc">Store blacklisted tokens with expiry timestamps in SQLite to invalidate logged out sessions.</p>
+              <div class="kb-card-tags">
+                <span class="kb-tag">Security</span>
+                <span class="kb-tag">Backend</span>
+              </div>
+              <div class="kb-card-footer">
+                <div class="kb-meta-group">
+                  <span class="kb-meta-item kb-due-soon">📅 Tomorrow</span>
+                  <span class="kb-meta-item">💬 3</span>
+                </div>
+                <div class="kb-avatar" style="background: #f59e0b;">JD</div>
+              </div>
+            </div>
+
+            <!-- Card: Overdue & Checklists -->
+            <div class="kb-card">
+              <div class="kb-card-header">
+                <span class="kb-task-key">KB-103</span>
+                <span class="kb-priority kb-priority-p0">🔥 Critical</span>
+              </div>
+              <h4 class="kb-card-title">Fix Mobile Indentation on Deep Comments</h4>
+              <p class="kb-card-desc">Replies nested deeper than 3 levels are compressing viewport width on iPhone screens.</p>
+              <div class="kb-card-tags">
+                <span class="kb-tag">Bug</span>
+                <span class="kb-tag">CSS</span>
+              </div>
+              <div class="kb-card-footer">
+                <div class="kb-progress-container">
+                  <span style="font-size: 11px;">☑ 2/3</span>
+                  <div class="kb-progress-bar"><div class="kb-progress-fill" style="width: 66%;"></div></div>
+                </div>
+                <span class="kb-meta-item kb-due-overdue">⚠️ Overdue</span>
+                <div class="kb-avatar" style="background: #ec4899;">SC</div>
+              </div>
+            </div>
+
+            <button class="kb-quick-add-btn">+ Add a task...</button>
+          </div>
+        </div>
+
+        <!-- Column 2: In Progress (Illustrating Drag Physics & Ghosting) -->
+        <div class="kb-column drag-over">
+          <div class="kb-column-header">
+            <div class="kb-column-title-group">
+              <span class="kb-status-dot" style="background: var(--col-in-progress);"></span>
+              <span class="kb-column-title">In Progress</span>
+            </div>
+            <span class="kb-wip-badge">3 / 4</span>
+          </div>
+          <div class="kb-column-body">
+
+            <!-- Card: Normal in-flight -->
+            <div class="kb-card">
+              <div class="kb-card-header">
+                <span class="kb-task-key">KB-105</span>
+                <span class="kb-priority kb-priority-p2">🔷 Medium</span>
+              </div>
+              <h4 class="kb-card-title">Add Light/Dark Contrast Audit in Playwright</h4>
+              <p class="kb-card-desc">Execute axe-core checks across all theme toggles to verify WCAG AA compliance.</p>
+              <div class="kb-card-tags">
+                <span class="kb-tag">QA</span>
+                <span class="kb-tag">A11y</span>
+              </div>
+              <div class="kb-card-footer">
+                <span class="kb-meta-item kb-due-normal">📅 Oct 19</span>
+                <div class="kb-avatar-stack">
+                  <div class="kb-avatar" style="background: #3b82f6;">AL</div>
+                  <div class="kb-avatar" style="background: #8b5cf6;">GR</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Insertion Target Drop Indicator -->
+            <div class="kb-drop-indicator"></div>
+
+            <!-- Card: Simulated Active Dragging State -->
+            <div class="kb-card is-dragging">
+              <div class="kb-card-header">
+                <span class="kb-task-key">KB-107</span>
+                <span class="kb-priority kb-priority-p0">🔥 Critical</span>
+              </div>
+              <h4 class="kb-card-title">Recursive Discussion Tree Deletion Bug</h4>
+              <p class="kb-card-desc">State: Card being actively dragged (lifts -4px, scales 1.02x, rotates 1.5deg with glowing shadow).</p>
+              <div class="kb-card-footer">
+                <span>Dragging Active</span>
+                <div class="kb-avatar" style="background: #10b981;">ME</div>
+              </div>
+            </div>
+
+            <!-- Card: Ghost Placeholder left behind -->
+            <div class="kb-card is-ghost">
+              <div class="kb-card-header">
+                <span class="kb-task-key">KB-107</span>
+              </div>
+              <div style="height: 28px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--brand-primary);">
+                Drop Slot Placeholder (Ghost)
+              </div>
+            </div>
+
+            <button class="kb-quick-add-btn">+ Add a task...</button>
+          </div>
+        </div>
+
+        <!-- Column 3: Done -->
+        <div class="kb-column">
+          <div class="kb-column-header">
+            <div class="kb-column-title-group">
+              <span class="kb-status-dot" style="background: var(--col-done);"></span>
+              <span class="kb-column-title">Done / Shipped</span>
+            </div>
+            <span class="kb-wip-badge" style="color: var(--col-done);">5 Tasks</span>
+          </div>
+          <div class="kb-column-body">
+            <div class="kb-card" style="opacity: 0.85;">
+              <div class="kb-card-header">
+                <span class="kb-task-key" style="text-decoration: line-through;">KB-98</span>
+                <span class="kb-priority kb-priority-p3">🟢 Low</span>
+              </div>
+              <h4 class="kb-card-title" style="color: var(--text-secondary);">Initialize Node 24 SQLite WAL Schema</h4>
+              <div class="kb-card-tags">
+                <span class="kb-tag">Database</span>
+              </div>
+              <div class="kb-card-footer">
+                <span style="color: var(--col-done); font-weight: 600;">✓ Completed</span>
+                <div class="kb-avatar" style="background: #6366f1;">AR</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 4: Buttons, Forms & Controls -->
+    <section class="ds-section">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">4. Form Elements, Buttons & Interactive States</h2>
+        <p class="ds-section-desc">Standardized inputs, buttons, and accessibility focus outlines.</p>
+      </div>
+
+      <div class="ds-showcase-row">
+        <button class="kb-btn kb-btn-primary">+ Create Task</button>
+        <button class="kb-btn kb-btn-secondary">Cancel</button>
+        <button class="kb-btn kb-btn-danger">Delete Task</button>
+        <button class="kb-btn kb-btn-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-top: var(--space-4);">
+        <div>
+          <label style="display: block; font-size: var(--font-xs); font-weight: 600; margin-bottom: var(--space-1); color: var(--text-secondary);">Task Title</label>
+          <input type="text" class="kb-input" value="Integrate WebSocket for real-time card moves">
+        </div>
+        <div>
+          <label style="display: block; font-size: var(--font-xs); font-weight: 600; margin-bottom: var(--space-1); color: var(--text-secondary);">Column Priority</label>
+          <select class="kb-select">
+            <option>P0: Urgent / Critical</option>
+            <option selected>P1: High Priority</option>
+            <option>P2: Medium</option>
+            <option>P3: Low</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Toast Notifications Demo -->
+    <section class="ds-section">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">5. Toast Feedback System</h2>
+        <p class="ds-section-desc">Non-blocking status toasts anchored to bottom-right viewport.</p>
+      </div>
+
+      <div style="display: flex; gap: var(--space-4); flex-wrap: wrap;">
+        <div class="kb-toast kb-toast-success">
+          <span>✅</span>
+          <div>
+            <div style="font-weight: 600; font-size: var(--font-sm);">Task Shipped!</div>
+            <div style="font-size: var(--font-xs); color: var(--text-secondary);">KB-98 was moved to Done.</div>
+          </div>
+        </div>
+
+        <div class="kb-toast kb-toast-error">
+          <span>⚠️</span>
+          <div>
+            <div style="font-weight: 600; font-size: var(--font-sm);">WIP Limit Exceeded</div>
+            <div style="font-size: var(--font-xs); color: var(--text-secondary);">In Progress has 4/3 tasks.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('themeToggleBtn').innerText = next === 'dark' ? '🌙 Theme Toggle' : '☀️ Theme Toggle';
+    }
+  </script>
+</body>
+</html>

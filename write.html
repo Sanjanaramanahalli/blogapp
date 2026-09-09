@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Write an Article — TownTalk</title>
+  <meta name="description" content="Share your knowledge, tutorials, and architectural insights with the TownTalk community.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/rich-text.css">
+  <style>
+    .editor-container {
+      max-width: 900px;
+      margin: 2rem auto 5rem;
+      padding: 0 1.5rem;
+    }
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+    }
+    .editor-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .title-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 1.5rem;
+      outline: none;
+      line-height: 1.25;
+      font-family: inherit;
+    }
+    .title-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+    .meta-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .cover-upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--bg-surface-elevated);
+      position: relative;
+    }
+    .cover-upload-zone:hover {
+      border-color: var(--accent);
+    }
+    .cover-preview {
+      max-width: 100%;
+      max-height: 240px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      display: none;
+      margin: 0 auto;
+    }
+    .editor-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      border-bottom: none;
+    }
+    .editor-toolbar button {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 0.4rem 0.6rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .editor-toolbar button:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+    }
+    .content-textarea {
+      width: 100%;
+      min-height: 380px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+      padding: 1.25rem;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text-primary);
+      resize: vertical;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .content-textarea:focus {
+      border-color: var(--accent);
+    }
+    .categories-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .category-chip {
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      border: 1px solid var(--border);
+      background: var(--bg-surface-elevated);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .category-chip.selected {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Navbar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="TownTalk Logo">
+            <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H7V21.5C7 22.1 7.7 22.4 8.2 22L12.5 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="rgba(255, 255, 255, 0.15)" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M5.5 15V11C5.5 10.5 5.9 10 6.4 10H8.6C9.1 10 9.5 10.5 9.5 11V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="7.5" cy="12.5" r="0.75" fill="currentColor"/>
+            <path d="M10.5 15V8.5L12 7L13.5 8.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="10" r="0.8" fill="#fbcfe8"/>
+            <path d="M14.5 15V10.5L16.5 9L18.5 10.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="16.5" cy="12.5" r="0.75" fill="currentColor"/>
+            <path d="M4.5 15H19.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M10 5.2C11.2 4.4 12.8 4.4 14 5.2" stroke="#fbcfe8" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M8.5 3.5C10.6 2.2 13.4 2.2 15.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.85"/>
+          </svg>
+        </div>
+        <div>Town<span>Talk</span></div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="/" class="nav-link">Articles</a></li>
+        <li id="nav-admin-link" style="display: none;"><a href="/admin" class="nav-link">Admin Dashboard</a></li>
+      </ul>
+
+      <div class="nav-actions" id="nav-actions">
+        <button class="theme-toggle" title="Toggle Theme">☀️</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="editor-container">
+    <div class="editor-header">
+      <div>
+        <h1 style="font-size: 1.5rem; font-weight: 700; margin: 0;">Create New Article</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.25rem 0 0;">Share your story or technical insights with our global audience</p>
+      </div>
+      <div class="editor-actions">
+        <a href="/" class="btn btn-outline btn-sm" id="btn-discard">Discard</a>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-save-draft">Save as Draft 💾</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-publish">Publish Article 🚀</button>
+      </div>
+    </div>
+
+    <!-- Article Title Input -->
+    <input type="text" id="blog-title" class="title-input" placeholder="Title of your article..." required autofocus>
+
+    <!-- Meta Settings Section -->
+    <div class="meta-box">
+      <div class="meta-grid">
+        <!-- Edition Selection -->
+        <div>
+          <label class="form-label" for="blog-edition" style="font-weight: 600;">News Edition *</label>
+          <select id="blog-edition" class="form-control" style="background: var(--bg-surface-elevated); color: var(--text-primary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.65rem 1rem; width: 100%;">
+            <option value="india" selected>🇮🇳 INDIA Edition (Local & National)</option>
+            <option value="world">🌐 WORLD Edition (International)</option>
+          </select>
+          <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+            Target regional Indian news or global international coverage
+          </small>
+        </div>
+
+        <!-- Video URL Input -->
+        <div>
+          <label class="form-label" for="blog-video-url" style="font-weight: 600;">Video URL (Optional)</label>
+          <input type="url" id="blog-video-url" class="form-control" placeholder="https://example.com/video.mp4">
+          <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+            Embed high-resolution video stream or MP4 broadcast footage
+          </small>
+        </div>
+
+        <!-- Categories Selection -->
+        <div>
+          <label class="form-label" style="font-weight: 600;">Categories (Select all that apply)</label>
+          <div class="categories-chips" id="categories-container">
+            <span style="color: var(--text-muted); font-size: 0.85rem;">Loading categories...</span>
+          </div>
+        </div>
+
+        <!-- Tags Input -->
+        <div>
+          <label class="form-label" for="tags-input" style="font-weight: 600;">Tags (Comma-separated)</label>
+          <input type="text" id="tags-input" class="form-control" placeholder="e.g. sports, movies, weather, breaking">
+          <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.35rem;">
+            Add keywords to help readers discover your post
+          </small>
+        </div>
+      </div>
+
+      <!-- Cover Image Option -->
+      <div style="margin-top: 1.25rem;">
+        <label class="form-label" style="font-weight: 600;">Cover Image</label>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+          <input type="text" id="cover-url-input" class="form-control" style="flex: 1; min-width: 260px;" placeholder="Paste an image URL (e.g. Unsplash) or upload a file...">
+          <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('cover-file-input').click()">
+            📁 Choose File
+          </button>
+          <input type="file" id="cover-file-input" accept="image/*" style="display: none;">
+        </div>
+        <div class="cover-upload-zone" id="cover-dropzone" onclick="document.getElementById('cover-file-input').click()">
+          <img id="cover-preview-img" class="cover-preview" alt="Cover preview">
+          <div id="cover-placeholder-text">
+            <span style="font-size: 1.5rem;">🖼️</span>
+            <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;">
+              Click to upload cover image (JPEG, PNG, WEBP, up to 5MB)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formatting Toolbar -->
+    <div class="editor-toolbar">
+      <button type="button" onclick="formatDoc('bold')" title="Bold"><b>B</b></button>
+      <button type="button" onclick="formatDoc('italic')" title="Italic"><i>I</i></button>
+      <button type="button" onclick="formatHeading(2)" title="Heading 2">H2</button>
+      <button type="button" onclick="formatHeading(3)" title="Heading 3">H3</button>
+      <button type="button" onclick="formatBlockquote()" title="Quote">❝ Quote</button>
+      <button type="button" onclick="formatCode()" title="Code">&lt;/&gt; Code</button>
+      <button type="button" onclick="formatList('bullet')" title="Bullet List">• List</button>
+    </div>
+
+    <!-- Content Textarea -->
+    <textarea id="blog-body" class="content-textarea" placeholder="Write your article content here in rich text or HTML...&#10;&#10;Use the toolbar above or write structured paragraphs." required></textarea>
+
+  </main>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/write.js"></script>
+</body>
+</html>

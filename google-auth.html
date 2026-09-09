@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in with Google - TownTalk</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --google-blue: #1a73e8;
+      --google-blue-hover: #1557b0;
+      --google-border: #dadce0;
+      --google-text: #202124;
+      --google-text-sub: #5f6368;
+      --google-bg: #ffffff;
+      --google-surface: #ffffff;
+      --google-error: #d93025;
+      --google-error-bg: #fce8e6;
+      --google-green: #1e8e3e;
+      --google-hover-bg: #f8f9fa;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: #f0f4f9;
+      color: var(--google-text);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .google-card {
+      background: var(--google-surface);
+      border: 1px solid var(--google-border);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 460px;
+      padding: 36px 36px 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .google-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .google-logo {
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    .google-title {
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 1.3333;
+      color: var(--google-text);
+      margin-bottom: 6px;
+    }
+
+    .google-subtitle {
+      font-size: 15px;
+      font-weight: 400;
+      letter-spacing: 0.1px;
+      line-height: 1.5;
+      color: var(--google-text-sub);
+    }
+
+    .alert-error {
+      display: none;
+      background: var(--google-error-bg);
+      color: var(--google-error);
+      border: 1px solid rgba(217, 48, 37, 0.3);
+      padding: 12px 14px;
+      border-radius: 4px;
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 20px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Account Chooser Section */
+    .account-chooser-section {
+      margin-bottom: 20px;
+    }
+
+    .account-chooser-heading {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--google-text-sub);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .account-list {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--google-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .google-account-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--google-border);
+      background: #ffffff;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--google-text);
+      transition: background-color 0.15s ease;
+      user-select: none;
+    }
+
+    .google-account-item:last-child {
+      border-bottom: none;
+    }
+
+    .google-account-item:hover {
+      background-color: var(--google-hover-bg);
+    }
+
+    .google-account-item:focus-visible {
+      outline: 2px solid var(--google-blue);
+      outline-offset: -2px;
+    }
+
+    .account-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--google-blue);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .account-avatar.admin-avatar {
+      background: #ea4335;
+    }
+
+    .account-avatar.another-avatar {
+      background: #f1f3f4;
+      color: var(--google-text-sub);
+    }
+
+    .account-details {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      min-width: 0;
+    }
+
+    .account-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--google-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .account-email {
+      font-size: 12px;
+      color: var(--google-text-sub);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .account-badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--google-green);
+      background: rgba(30, 142, 62, 0.1);
+      padding: 2px 8px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .account-badge.admin-badge {
+      color: #ea4335;
+      background: rgba(234, 67, 53, 0.1);
+    }
+
+    .btn-use-another-account {
+      background: #ffffff;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+
+    .divider-text {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 18px 0;
+      color: var(--google-text-sub);
+      font-size: 12px;
+    }
+
+    .divider-text::before, .divider-text::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--google-border);
+    }
+
+    .divider-text span {
+      padding: 0 10px;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--google-text-sub);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      padding: 12px 14px;
+      font-size: 15px;
+      color: var(--google-text);
+      border: 1px solid var(--google-border);
+      border-radius: 4px;
+      outline: none;
+      background: #ffffff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--google-blue);
+      box-shadow: 0 0 0 1px var(--google-blue);
+    }
+
+    .form-input.has-error {
+      border-color: var(--google-error);
+    }
+
+    .actions-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    .btn-text {
+      background: transparent;
+      border: none;
+      color: var(--google-blue);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 9px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-text:hover {
+      background-color: rgba(26, 115, 232, 0.08);
+    }
+
+    .btn-primary {
+      background-color: var(--google-blue);
+      color: #ffffff;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--google-blue-hover);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Verification Approval Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(32, 33, 36, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .verification-modal {
+      background: #ffffff;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 440px;
+      padding: 28px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+      animation: modalSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    @keyframes modalSlide {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .modal-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--google-text);
+    }
+
+    .btn-close-modal {
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      line-height: 1;
+      color: var(--google-text-sub);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+    }
+
+    .btn-close-modal:hover {
+      background-color: var(--google-hover-bg);
+      color: var(--google-text);
+    }
+
+    .modal-account-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f8f9fa;
+      border: 1px solid var(--google-border);
+      border-radius: 20px;
+      padding: 6px 12px;
+      margin-bottom: 16px;
+    }
+
+    .modal-account-pill .account-avatar {
+      width: 26px;
+      height: 26px;
+      font-size: 12px;
+    }
+
+    .modal-account-pill .account-email {
+      font-weight: 500;
+      color: var(--google-text);
+      font-size: 13px;
+    }
+
+    .modal-prompt-card {
+      background: #e8f0fe;
+      border: 1px solid #d2e3fc;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .modal-prompt-card p {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #174ea6;
+      margin-bottom: 8px;
+    }
+
+    .modal-prompt-card .prompt-sub {
+      font-size: 12px;
+      color: var(--google-text-sub);
+      margin-bottom: 0;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .demo-accounts {
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid var(--google-border);
+      font-size: 12px;
+      color: var(--google-text-sub);
+    }
+
+    .demo-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .demo-chip {
+      background: #f1f3f4;
+      border: 1px solid #dadce0;
+      border-radius: 12px;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: #3c4043;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .demo-chip:hover {
+      background: #e8eaed;
+      border-color: #bdc1c6;
+    }
+
+    .google-footer {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 460px;
+      font-size: 12px;
+      color: var(--google-text-sub);
+      padding: 0 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="google-card" role="main">
+    <div class="google-header">
+      <div class="google-logo" aria-label="Google">
+        <svg width="48" height="48" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+      </div>
+      <h1 class="google-title" id="google-main-title">Sign in</h1>
+      <p class="google-subtitle">to continue to TownTalk</p>
+    </div>
+
+    <!-- Error Alert Banner -->
+    <div id="google-error-alert" class="alert-error" role="alert" aria-live="assertive"></div>
+
+    <!-- 1. Google Account Chooser List Section -->
+    <div class="account-chooser-section" id="account-chooser-section">
+      <div class="account-chooser-heading" id="google-header-title">Choose an account</div>
+      <div class="account-list" id="google-account-list">
+        <!-- Account 1: Signed-in Reader -->
+        <div class="google-account-item" id="account-item-alex" data-email="alex.dev@gmail.com" data-name="Alex Mercer" role="button" tabindex="0" aria-label="Select Alex Mercer, alex.dev@gmail.com">
+          <div class="account-avatar">AM</div>
+          <div class="account-details">
+            <span class="account-name">Alex Mercer</span>
+            <span class="account-email">alex.dev@gmail.com</span>
+          </div>
+          <span class="account-badge">Signed in</span>
+        </div>
+
+        <!-- Account 2: Signed-in Admin -->
+        <div class="google-account-item" id="account-item-admin" data-email="admin@blog.com" data-name="System Administrator" role="button" tabindex="0" aria-label="Select System Administrator, admin@blog.com">
+          <div class="account-avatar admin-avatar">SA</div>
+          <div class="account-details">
+            <span class="account-name">System Administrator</span>
+            <span class="account-email">admin@blog.com</span>
+          </div>
+          <span class="account-badge admin-badge">Admin · Signed in</span>
+        </div>
+
+        <!-- Option: Use another account -->
+        <button type="button" class="google-account-item btn-use-another-account" id="btn-use-another-account" aria-label="Use another account">
+          <div class="account-avatar another-avatar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7.5" r="4"></circle>
+              <line x1="20" y1="8" x2="20" y2="14"></line>
+              <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+          </div>
+          <div class="account-details">
+            <span class="account-name">Use another account</span>
+            <span class="account-email">Enter email and password</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div class="divider-text">
+      <span>or enter Google credentials below</span>
+    </div>
+
+    <!-- 2. Credential Input Form Section (Always accessible for manual entry or via 'Use another account') -->
+    <form id="google-auth-form" novalidate>
+      <input type="hidden" id="oauth-state" name="state" value="">
+
+      <div class="form-group">
+        <label class="form-label" for="google-email">Email or phone</label>
+        <input 
+          type="email" 
+          id="google-email" 
+          name="email" 
+          class="form-input" 
+          placeholder="name@gmail.com" 
+          required 
+          autocomplete="username"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="google-password">Enter your password</label>
+        <input 
+          type="password" 
+          id="google-password" 
+          name="password" 
+          class="form-input" 
+          placeholder="••••••••" 
+          required 
+          autocomplete="current-password"
+        >
+      </div>
+
+      <div class="actions-row">
+        <button type="button" id="btn-google-cancel" class="btn-text" aria-label="Cancel authentication and return to login">
+          Cancel
+        </button>
+        <button type="submit" id="btn-google-signin-submit" class="btn-primary">
+          Next
+        </button>
+      </div>
+    </form>
+
+    <div class="demo-accounts">
+      <strong>Quick Test Accounts:</strong>
+      <div class="demo-chips">
+        <button type="button" class="demo-chip" id="chip-valid-account" title="Click to fill valid credentials">
+          ✓ Valid Account (alex.dev@gmail.com)
+        </button>
+        <button type="button" class="demo-chip" id="chip-wrong-pw" title="Click to fill valid email with wrong password">
+          ✗ Incorrect Password
+        </button>
+        <button type="button" class="demo-chip" id="chip-invalid-account" title="Click to fill non-existent account">
+          ✗ Invalid Google Account
+        </button>
+        <button type="button" class="demo-chip" id="chip-unauthorized-account" title="Click to fill unauthorized account">
+          ⛔ Unauthorized Account
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Google Account Verification & Approval Modal -->
+  <div class="modal-backdrop" id="google-verification-modal" role="dialog" aria-modal="true" aria-labelledby="verification-modal-title">
+    <div class="verification-modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <h2 class="modal-title" id="verification-modal-title">Verify it's you</h2>
+        </div>
+        <button type="button" class="btn-close-modal" id="btn-close-verification" aria-label="Close verification dialog">&times;</button>
+      </div>
+
+      <div class="modal-account-pill">
+        <div class="account-avatar" id="modal-account-avatar">AM</div>
+        <span class="account-email" id="modal-account-email">alex.dev@gmail.com</span>
+      </div>
+
+      <div class="modal-prompt-card">
+        <p>Google has sent a sign-in verification request to your registered device or email.</p>
+        <p class="prompt-sub">Confirm the approval request to finish signing in to TownTalk.</p>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-text" id="btn-deny-verification">Deny</button>
+        <button type="button" class="btn-primary" id="btn-approve-verification">Approve & Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="google-footer">
+    <span>English (United States)</span>
+    <div>
+      <span style="margin-left: 12px;">Help</span>
+      <span style="margin-left: 12px;">Privacy</span>
+      <span style="margin-left: 12px;">Terms</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const state = urlParams.get('state') || '';
+      document.getElementById('oauth-state').value = state;
+
+      const form = document.getElementById('google-auth-form');
+      const emailInput = document.getElementById('google-email');
+      const passwordInput = document.getElementById('google-password');
+      const errorAlert = document.getElementById('google-error-alert');
+      const cancelBtn = document.getElementById('btn-google-cancel');
+      const useAnotherBtn = document.getElementById('btn-use-another-account');
+      const headerTitle = document.getElementById('google-header-title');
+
+      // Modal Elements
+      const verificationModal = document.getElementById('google-verification-modal');
+      const modalAvatar = document.getElementById('modal-account-avatar');
+      const modalEmail = document.getElementById('modal-account-email');
+      const approveBtn = document.getElementById('btn-approve-verification');
+      const denyBtn = document.getElementById('btn-deny-verification');
+      const closeVerificationBtn = document.getElementById('btn-close-verification');
+
+      let selectedAccountEmail = '';
+      let selectedAccountName = '';
+
+      function showError(msg) {
+        errorAlert.textContent = msg;
+        errorAlert.style.display = 'block';
+      }
+
+      function hideError() {
+        errorAlert.textContent = '';
+        errorAlert.style.display = 'none';
+        emailInput.classList.remove('has-error');
+        passwordInput.classList.remove('has-error');
+      }
+
+      // Quick test chip helpers
+      document.getElementById('chip-valid-account')?.addEventListener('click', () => {
+        hideError();
+        emailInput.value = 'alex.dev@gmail.com';
+        passwordInput.value = 'ValidGooglePass123!';
+      });
+
+      document.getElementById('chip-wrong-pw')?.addEventListener('click', () => {
+        hideError();
+        emailInput.value = 'alex.dev@gmail.com';
+        passwordInput.value = 'wrongpassword';
+      });
+
+      document.getElementById('chip-invalid-account')?.addEventListener('click', () => {
+        hideError();
+        emailInput.value = 'invalid_user@unknown.xyz';
+        passwordInput.value = 'ValidGooglePass123!';
+      });
+
+      document.getElementById('chip-unauthorized-account')?.addEventListener('click', () => {
+        hideError();
+        emailInput.value = 'unauthorized.user@gmail.com';
+        passwordInput.value = 'ValidGooglePass123!';
+      });
+
+      // Handle Account Selection -> Triggers Google Verification Prompt Modal
+      function triggerVerificationPrompt(email, name, avatarText) {
+        hideError();
+        selectedAccountEmail = email;
+        selectedAccountName = name || email;
+        modalEmail.textContent = email;
+        modalAvatar.textContent = avatarText || email.substring(0, 2).toUpperCase();
+        if (email === 'admin@blog.com') {
+          modalAvatar.classList.add('admin-avatar');
+        } else {
+          modalAvatar.classList.remove('admin-avatar');
+        }
+        verificationModal.classList.add('active');
+        approveBtn.focus();
+      }
+
+      document.querySelectorAll('.google-account-item[data-email]').forEach(item => {
+        item.addEventListener('click', () => {
+          const email = item.getAttribute('data-email');
+          const name = item.getAttribute('data-name');
+          const avatar = item.querySelector('.account-avatar')?.textContent || 'U';
+          triggerVerificationPrompt(email, name, avatar);
+        });
+
+        item.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            item.click();
+          }
+        });
+      });
+
+      // Handle 'Use another account' Action
+      useAnotherBtn.addEventListener('click', () => {
+        hideError();
+        headerTitle.textContent = 'Sign in';
+        selectedAccountEmail = '';
+        selectedAccountName = '';
+        emailInput.value = '';
+        passwordInput.value = '';
+        emailInput.focus();
+        emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+
+      // Handle Verification Modal: Approve & Continue
+      approveBtn.addEventListener('click', async () => {
+        approveBtn.disabled = true;
+        approveBtn.textContent = 'Verifying approval...';
+
+        try {
+          const res = await fetch('/auth/google/authenticate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: selectedAccountEmail,
+              verificationApproved: true,
+              state: document.getElementById('oauth-state').value,
+              provider: 'google'
+            })
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (!res.ok) {
+            verificationModal.classList.remove('active');
+            showError(data.error || 'Account verification failed.');
+            approveBtn.disabled = false;
+            approveBtn.textContent = 'Approve & Continue';
+            return;
+          }
+
+          if (data.redirectUrl) {
+            window.location.href = data.redirectUrl;
+          } else {
+            window.location.href = '/';
+          }
+        } catch (err) {
+          verificationModal.classList.remove('active');
+          showError('Unable to verify Google approval. Please try again.');
+          approveBtn.disabled = false;
+          approveBtn.textContent = 'Approve & Continue';
+        }
+      });
+
+      // Handle Verification Modal: Deny / Cancel / Close
+      function closeVerification(reason = 'cancelled') {
+        verificationModal.classList.remove('active');
+        window.location.href = `/login?error=${encodeURIComponent(reason)}`;
+      }
+
+      denyBtn.addEventListener('click', () => closeVerification('cancelled'));
+      closeVerificationBtn.addEventListener('click', () => closeVerification('cancelled'));
+
+      // Close modal on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && verificationModal.classList.contains('active')) {
+          closeVerification('cancelled');
+        }
+      });
+
+      // Handle Global Cancel Button
+      cancelBtn.addEventListener('click', async () => {
+        try {
+          const res = await fetch('/auth/google/authenticate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'cancel', state, provider: 'google' })
+          });
+          const data = await res.json().catch(() => ({}));
+          window.location.href = data.redirectUrl || '/login?error=cancelled';
+        } catch {
+          window.location.href = '/login?error=cancelled';
+        }
+      });
+
+      // Handle Manual Credentials Form Submission
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideError();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email) {
+          emailInput.classList.add('has-error');
+          showError('Enter an email or phone number.');
+          emailInput.focus();
+          return;
+        }
+
+        if (!password) {
+          passwordInput.classList.add('has-error');
+          showError('Enter a password.');
+          passwordInput.focus();
+          return;
+        }
+
+        const submitBtn = document.getElementById('btn-google-signin-submit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Verifying...';
+
+        try {
+          const res = await fetch('/auth/google/authenticate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              password,
+              state: document.getElementById('oauth-state').value,
+              provider: 'google'
+            })
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (!res.ok) {
+            if (res.status === 400) {
+              emailInput.classList.add('has-error');
+            } else if (res.status === 401) {
+              passwordInput.classList.add('has-error');
+            } else if (res.status === 403) {
+              emailInput.classList.add('has-error');
+            }
+            showError(data.error || 'Google authentication failed. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Next';
+            return;
+          }
+
+          if (data.redirectUrl) {
+            window.location.href = data.redirectUrl;
+          } else {
+            window.location.href = '/';
+          }
+        } catch (err) {
+          showError('Unable to connect to Google authentication service. Please check your connection.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Next';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

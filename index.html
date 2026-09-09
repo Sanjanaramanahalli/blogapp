@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TownTalk - Modern Full-Stack Publishing & Community Insights</title>
+  <meta name="description" content="Explore vibrant town discussions, community reporting, high-impact architectural insights, and stories.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+  <!-- Sticky Navbar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="TownTalk Logo">
+            <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H7V21.5C7 22.1 7.7 22.4 8.2 22L12.5 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="rgba(255, 255, 255, 0.15)" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M5.5 15V11C5.5 10.5 5.9 10 6.4 10H8.6C9.1 10 9.5 10.5 9.5 11V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="7.5" cy="12.5" r="0.75" fill="currentColor"/>
+            <path d="M10.5 15V8.5L12 7L13.5 8.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="10" r="0.8" fill="#fbcfe8"/>
+            <path d="M14.5 15V10.5L16.5 9L18.5 10.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="16.5" cy="12.5" r="0.75" fill="currentColor"/>
+            <path d="M4.5 15H19.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M10 5.2C11.2 4.4 12.8 4.4 14 5.2" stroke="#fbcfe8" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M8.5 3.5C10.6 2.2 13.4 2.2 15.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.85"/>
+          </svg>
+        </div>
+        <div>Town<span>Talk</span></div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="/" class="nav-link active">Articles</a></li>
+        <li id="nav-write-link" style="display: none;"><a href="/write" class="nav-link">Write</a></li>
+        <li id="nav-admin-link" style="display: none;"><a href="/admin" class="nav-link">Admin Dashboard</a></li>
+      </ul>
+
+      <!-- NDTV-Style News Edition Switcher -->
+      <div class="edition-switcher" role="radiogroup" aria-label="News Edition">
+        <button type="button" id="edition-india" class="edition-btn active" data-edition="india" aria-pressed="true" title="Switch to India Edition">
+          🇮🇳 INDIA
+        </button>
+        <button type="button" id="edition-world" class="edition-btn" data-edition="world" aria-pressed="false" title="Switch to World Edition">
+          🌐 WORLD
+        </button>
+      </div>
+
+      <div class="nav-actions" id="nav-actions">
+        <button class="theme-toggle" title="Toggle Theme">☀️</button>
+        <a href="/login" class="btn btn-outline btn-sm">Sign in</a>
+        <a href="/register" class="btn btn-primary btn-sm">Sign up</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content container">
+    <!-- Hero Header -->
+    <section class="hero">
+      <div class="hero-tagline">✨ The Modern Platform for Software Craftsmanship</div>
+      <h1 class="hero-title">Architecting the Future of <span class="hero-gradient">Web Engineering</span></h1>
+      <p class="hero-subtitle">
+        Deep dives into distributed patterns, data integrity, and frontend excellence. Read, like, and engage in threaded community discussions.
+      </p>
+    </section>
+
+    <!-- Search, Filter & Taxonomy Bar -->
+    <section class="filter-bar" aria-label="Search and filter options">
+      <div class="search-row">
+        <div class="search-input-wrapper">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="search-input" class="search-input" placeholder="Search articles by title or content..." aria-label="Search articles">
+          <span class="search-kbd" title="Press / to search">/</span>
+        </div>
+
+        <select id="sort-select" class="sort-select" aria-label="Sort articles">
+          <option value="newest">Newest First</option>
+          <option value="popular">Most Liked</option>
+          <option value="oldest">Oldest First</option>
+        </select>
+      </div>
+
+      <div class="categories-row" id="categories-row">
+        <button class="filter-pill active" data-category="">All Categories</button>
+        <!-- Dynamic categories will be injected here -->
+      </div>
+
+      <div class="tags-row" id="tags-row" style="margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+        <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.25rem;">Popular Tags:</span>
+        <!-- Dynamic tags injected here -->
+      </div>
+
+      <!-- Active Filter Chips Bar -->
+      <div class="active-filters-bar" id="active-filters-bar" style="display: none;">
+        <!-- Injected active filter chips -->
+      </div>
+    </section>
+
+    <!-- Blog Posts Grid -->
+    <section id="blog-grid" class="blog-grid" aria-live="polite">
+      <!-- Dynamic blog cards injected here -->
+    </section>
+
+    <!-- Pagination Controls -->
+    <nav class="pagination-container" id="pagination-container" aria-label="Blog pages navigation">
+      <!-- Dynamic page buttons injected here -->
+    </nav>
+  </main>
+
+  <!-- Global Footer -->
+  <footer style="border-top: 1px solid var(--border); padding: 2.5rem 0; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+    <div class="container">
+      <p style="margin-bottom: 0.5rem;"><strong>TownTalk</strong> — Engineered with Node.js, SQLite WAL & Vanilla CSS</p>
+      <p>© 2026 TownTalk Platform. Production-grade Full-Stack Architecture.</p>
+    </div>
+  </footer>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
