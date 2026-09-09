@@ -31,6 +31,7 @@ app.use('/uploads', express.static(path.join(PUBLIC_DIR, 'uploads')));
 
 // Mount API routes
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/blogs/:blogId/comments', commentRoutes);
 app.use('/api/blogs/:blogId/likes', likeRoutes);

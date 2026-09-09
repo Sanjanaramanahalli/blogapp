@@ -22,6 +22,23 @@ function initSchema() {
     const schemaSql = fs.readFileSync(SCHEMA_PATH, 'utf-8');
     db.exec(schemaSql);
   }
+
+  // Ensure Google OAuth columns exist in users table for existing databases
+  try {
+    const columns = db.prepare("PRAGMA table_info(users)").all().map(c => c.name);
+    if (!columns.includes('google_id')) {
+      db.exec("ALTER TABLE users ADD COLUMN google_id TEXT;");
+      db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL;");
+    }
+    if (!columns.includes('avatar_url')) {
+      db.exec("ALTER TABLE users ADD COLUMN avatar_url TEXT;");
+    }
+    if (!columns.includes('auth_provider')) {
+      db.exec("ALTER TABLE users ADD COLUMN auth_provider TEXT DEFAULT 'local';");
+    }
+  } catch (err) {
+    console.error('Migration error:', err);
+  }
 }
 
 initSchema();

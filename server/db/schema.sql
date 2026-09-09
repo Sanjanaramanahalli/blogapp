@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL COLLATE NOCASE,
   password_hash TEXT NOT NULL,
   role TEXT CHECK(role IN ('admin', 'reader')) NOT NULL DEFAULT 'reader',
+  google_id TEXT UNIQUE,
+  avatar_url TEXT,
+  auth_provider TEXT DEFAULT 'local',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

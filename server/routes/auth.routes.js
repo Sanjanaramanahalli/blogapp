@@ -14,4 +14,10 @@ router.post('/forgot-password', authController.forgotPassword);
 router.post('/verify-otp', authController.verifyOtp);
 router.post('/reset-password', authController.resetPassword);
 
+// Google OAuth routes
+router.get('/google', authController.googleAuthInit);
+router.get('/google/callback', authController.googleAuthCallback);
+router.get('/google/screen', authController.renderGoogleAuthScreen);
+router.post('/google/authenticate', authController.googleMockAuthenticate);
+
 module.exports = router;

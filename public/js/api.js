@@ -19,6 +19,7 @@ const API = {
 
     try {
       const response = await fetch(endpoint, {
+        credentials: 'include',
         ...options,
         headers
       });
@@ -78,27 +79,41 @@ const API = {
     return user && user.role === 'admin';
   },
 
-  async checkAuth() {
-    const token = this.getToken();
-    if (!token) {
-      this.setUser(null);
-      return null;
-    }
+  // Extract token from URL query parameters (e.g. from OAuth redirect)
+  extractTokenFromUrl() {
     try {
-      const res = await this.request('/api/auth/me');
-      if (res.user) {
-        this.setUser(res.user);
-        return res.user;
-      } else {
-        this.setToken(null);
-        this.setUser(null);
-        return null;
+      const params = new URLSearchParams(window.location.search);
+      const urlToken = params.get('token');
+      if (urlToken) {
+        this.setToken(urlToken);
+        params.delete('token');
+        const remainingQuery = params.toString();
+        const cleanUrl = window.location.pathname + (remainingQuery ? '?' + remainingQuery : '');
+        window.history.replaceState(null, '', cleanUrl);
+        return urlToken;
       }
     } catch {
-      this.setToken(null);
-      this.setUser(null);
-      return null;
+      // Ignore URL parsing errors
     }
+    return null;
+  },
+
+  async checkAuth() {
+    this.extractTokenFromUrl();
+    try {
+      const res = await this.request('/api/auth/me');
+      if (res && res.user) {
+        this.setUser(res.user);
+        if (typeof updateNavbarAuth === 'function') updateNavbarAuth();
+        return res.user;
+      }
+    } catch {
+      // Not authenticated or expired
+    }
+    this.setToken(null);
+    this.setUser(null);
+    if (typeof updateNavbarAuth === 'function') updateNavbarAuth();
+    return null;
   },
 
   async logout() {

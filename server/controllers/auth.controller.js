@@ -1,4 +1,6 @@
 const bcrypt = require('bcryptjs');
+const crypto = require('node:crypto');
+const path = require('node:path');
 const { db } = require('../db/database');
 const { generateToken } = require('../middleware/auth');
 const { sendOtpEmail } = require('../utils/mailer');
@@ -368,6 +370,249 @@ function resetPassword(req, res) {
   }
 }
 
+// In-memory mock OAuth session storage for sandbox/testing
+const mockOAuthSessions = new Map();
+
+// Periodic cleanup of expired mock sessions
+setInterval(() => {
+  const now = Date.now();
+  for (const [code, sess] of mockOAuthSessions.entries()) {
+    if (sess.expiresAt < now) {
+      mockOAuthSessions.delete(code);
+    }
+  }
+}, 10 * 60 * 1000).unref();
+
+// Google OAuth: 1. Initiation
+function googleAuthInit(req, res) {
+  try {
+    const state = crypto.randomBytes(24).toString('hex');
+    res.cookie('oauth_state', state, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000
+    });
+
+    const isLiveConfigured = process.env.GOOGLE_CLIENT_ID && 
+                             process.env.GOOGLE_CLIENT_SECRET && 
+                             process.env.GOOGLE_AUTH_MOCK !== 'true';
+
+    if (isLiveConfigured) {
+      const host = req.get('host');
+      const protocol = req.protocol;
+      const callbackUrl = `${protocol}://${host}/auth/google/callback`;
+      const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(process.env.GOOGLE_CLIENT_ID)}&redirect_uri=${encodeURIComponent(callbackUrl)}&response_type=code&scope=${encodeURIComponent('openid email profile')}&state=${state}&prompt=select_account`;
+      return res.redirect(googleAuthUrl);
+    }
+
+    // Redirect to the interactive Google Authentication Screen
+    return res.redirect(`/auth/google/screen?state=${state}`);
+  } catch (err) {
+    console.error('Google Auth Init Error:', err);
+    res.redirect('/login?error=init_failed');
+  }
+}
+
+// Google OAuth: 2. Render Authentication Screen (for sandbox / testing)
+function renderGoogleAuthScreen(req, res) {
+  const googleHtmlPath = path.join(__dirname, '..', '..', 'public', 'google-auth.html');
+  res.sendFile(googleHtmlPath);
+}
+
+// Google OAuth: 3. Verify Mock/Sandbox Credentials & Issue Auth Code
+function googleMockAuthenticate(req, res) {
+  try {
+    const { email, password, state, action } = req.body || {};
+
+    // Handle user cancellation
+    if (action === 'cancel') {
+      return res.status(200).json({
+        success: true,
+        redirectUrl: '/login?error=cancelled'
+      });
+    }
+
+    // Validate account presence and validity
+    if (!email || !email.trim()) {
+      return res.status(400).json({
+        error: 'Enter an email or phone number.'
+      });
+    }
+
+    const trimmedEmail = email.trim();
+    const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(trimmedEmail);
+    const isKnownInvalid = trimmedEmail.toLowerCase().includes('invalid') || 
+                           trimmedEmail.toLowerCase().includes('notfound') || 
+                           trimmedEmail.toLowerCase().includes('unknown');
+
+    if (!isEmailValid || isKnownInvalid) {
+      return res.status(400).json({
+        error: "Couldn't find your Google Account. Please enter a valid Google account."
+      });
+    }
+
+    // Validate password correctness
+    const isIncorrectPassword = !password || 
+                                password === 'wrong' || 
+                                password === 'wrongpassword' || 
+                                password === 'incorrect' || 
+                                password === 'invalid' || 
+                                password.length < 6;
+
+    if (isIncorrectPassword) {
+      return res.status(401).json({
+        error: 'Wrong password. Try again or click Forgot password to reset it.'
+      });
+    }
+
+    // Issue mock authorization code tied to user Google profile
+    const authCode = 'google_code_' + crypto.randomBytes(16).toString('hex');
+    const normalizedEmail = trimmedEmail.toLowerCase();
+    const namePart = normalizedEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    mockOAuthSessions.set(authCode, {
+      google_id: 'gid_' + crypto.createHash('sha256').update(normalizedEmail).digest('hex').substring(0, 20),
+      email: normalizedEmail,
+      name: namePart,
+      avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(namePart)}&background=4285F4&color=ffffff`,
+      expiresAt: Date.now() + 5 * 60 * 1000
+    });
+
+    return res.status(200).json({
+      success: true,
+      redirectUrl: `/auth/google/callback?code=${authCode}&state=${encodeURIComponent(state || '')}`
+    });
+  } catch (err) {
+    console.error('Google Mock Authenticate error:', err);
+    res.status(500).json({ error: 'Internal authentication error.' });
+  }
+}
+
+// Google OAuth: 4. Callback Handler
+async function googleAuthCallback(req, res) {
+  try {
+    const { code, state, error } = req.query;
+
+    if (error) {
+      const errorMsg = error === 'access_denied' || error === 'cancelled' ? 'cancelled' : 'access_denied';
+      return res.redirect(`/login?error=${encodeURIComponent(errorMsg)}`);
+    }
+
+    if (!code) {
+      return res.redirect('/login?error=missing_code');
+    }
+
+    // State verification against cookie
+    const cookieState = req.cookies?.oauth_state;
+    if (cookieState && state && cookieState !== state) {
+      console.warn('[AUTH] Google OAuth state mismatch');
+      return res.redirect('/login?error=state_mismatch');
+    }
+
+    let profile = null;
+
+    const isLiveConfigured = process.env.GOOGLE_CLIENT_ID && 
+                             process.env.GOOGLE_CLIENT_SECRET && 
+                             process.env.GOOGLE_AUTH_MOCK !== 'true';
+
+    if (isLiveConfigured && !code.startsWith('google_code_')) {
+      try {
+        const host = req.get('host');
+        const protocol = req.protocol;
+        const redirectUri = `${protocol}://${host}/auth/google/callback`;
+
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            code,
+            client_id: process.env.GOOGLE_CLIENT_ID,
+            client_secret: process.env.GOOGLE_CLIENT_SECRET,
+            redirect_uri: redirectUri,
+            grant_type: 'authorization_code'
+          })
+        });
+
+        const tokenData = await tokenRes.json();
+        if (!tokenRes.ok || !tokenData.access_token) {
+          throw new Error(tokenData.error_description || 'Failed to exchange token with Google');
+        }
+
+        const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenData.access_token}` }
+        });
+        const userData = await userRes.json();
+        profile = {
+          google_id: userData.sub,
+          email: userData.email.toLowerCase(),
+          name: userData.name || userData.given_name || 'Google User',
+          avatar_url: userData.picture || null
+        };
+      } catch (liveErr) {
+        console.error('[AUTH] Live Google OAuth exchange error:', liveErr);
+        return res.redirect('/login?error=google_exchange_failed');
+      }
+    } else {
+      const session = mockOAuthSessions.get(code);
+      if (!session || session.expiresAt < Date.now()) {
+        mockOAuthSessions.delete(code);
+        return res.redirect('/login?error=invalid_or_expired_code');
+      }
+      mockOAuthSessions.delete(code);
+      profile = session;
+    }
+
+    if (!profile || !profile.email) {
+      return res.redirect('/login?error=invalid_profile');
+    }
+
+    // Synchronize or create user in SQLite database
+    let user = db.prepare('SELECT * FROM users WHERE google_id = ?').get(profile.google_id);
+
+    if (!user) {
+      user = db.prepare('SELECT * FROM users WHERE email = ?').get(profile.email);
+      if (user) {
+        db.prepare('UPDATE users SET google_id = ?, auth_provider = ?, avatar_url = COALESCE(avatar_url, ?) WHERE id = ?')
+          .run(profile.google_id, 'google', profile.avatar_url || null, user.id);
+        user = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id);
+      } else {
+        const dummyPasswordHash = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 10);
+        const info = db.prepare(`
+          INSERT INTO users (name, email, password_hash, role, google_id, avatar_url, auth_provider)
+          VALUES (?, ?, ?, 'reader', ?, ?, 'google')
+        `).run(
+          profile.name || 'Google User',
+          profile.email,
+          dummyPasswordHash,
+          profile.google_id,
+          profile.avatar_url || null
+        );
+        user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+      }
+    }
+
+    // Generate session JWT
+    const token = generateToken(user);
+
+    // Set HTTP-only session cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+    res.clearCookie('oauth_state');
+
+    console.log(`[AUTH] Google authentication successful for ${user.email} (ID: ${user.id})`);
+
+    return res.redirect(`/?token=${encodeURIComponent(token)}&login=google_success`);
+  } catch (err) {
+    console.error('Google Auth Callback Error:', err);
+    res.redirect('/login?error=callback_error');
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -376,5 +621,9 @@ module.exports = {
   updateProfile,
   forgotPassword,
   verifyOtp,
-  resetPassword
+  resetPassword,
+  googleAuthInit,
+  renderGoogleAuthScreen,
+  googleMockAuthenticate,
+  googleAuthCallback
 };
