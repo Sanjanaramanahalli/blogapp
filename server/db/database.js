@@ -179,6 +179,19 @@ function initSchema() {
   } catch (err) {
     console.error('Migration error:', err);
   }
+
+  // Auto-seed default blogs and categories if database is empty
+  try {
+    const blogCountRow = db.prepare('SELECT COUNT(*) as count FROM blogs').get();
+    const count = blogCountRow ? (blogCountRow.count !== undefined ? blogCountRow.count : blogCountRow['count(*)'] || 0) : 0;
+    if (Number(count) === 0) {
+      console.log('🌱 Database has 0 blogs. Auto-seeding initial articles...');
+      const { seedDatabase } = require('./seed');
+      seedDatabase();
+    }
+  } catch (seedErr) {
+    console.warn('Auto-seed check note:', seedErr.message);
+  }
 }
 
 initSchema();
