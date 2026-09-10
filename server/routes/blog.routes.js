@@ -33,7 +33,7 @@ router.delete('/:id/save', requireAuth, (req, res, next) => {
 }, profileController.unsaveBlog);
 
 // Publishing & Author/Admin management routes
-router.post('/', requireAdmin, blogController.createBlog);
+router.post('/', requireAuth, blogController.createBlog);
 router.put('/:id', requireOwnerOrAdmin, blogController.updateBlog);
 router.patch('/:id/status', requireOwnerOrAdmin, blogController.togglePublishStatus);
 router.delete('/:id', requireOwnerOrAdmin, blogController.deleteBlog);

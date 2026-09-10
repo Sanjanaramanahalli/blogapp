@@ -237,7 +237,9 @@ function updateNavbarAuth() {
     adminNavTab.style.display = API.isAdmin() ? 'inline-flex' : 'none';
   }
   if (writeNavTab) {
-    writeNavTab.style.display = API.isAdmin() ? 'inline-flex' : 'none';
+    writeNavTab.style.display = user ? 'inline-flex' : 'none';
+    const link = writeNavTab.querySelector('a');
+    if (link) link.textContent = 'Publish';
   }
 
   if (!navActions) return;
@@ -254,9 +256,7 @@ function updateNavbarAuth() {
       ? `<img src="${user.avatar_url}" alt="${escapeHtml(user.name)}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`
       : initials;
 
-    const writeBtnHtml = API.isAdmin()
-      ? `<a href="/write" class="btn btn-primary btn-sm" id="nav-write-btn" style="display: inline-flex; align-items: center; gap: 0.35rem;">✍️ Write</a>`
-      : '';
+    const writeBtnHtml = `<a href="/write" class="btn btn-primary btn-sm" id="nav-write-btn" style="display: inline-flex; align-items: center; gap: 0.35rem;">✍️ Publish</a>`;
 
     navActions.innerHTML = `
       <button class="theme-toggle" title="Toggle Theme">☀️</button>

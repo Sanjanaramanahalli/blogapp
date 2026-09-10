@@ -16,13 +16,6 @@ async function checkWriterAccess() {
     }, 800);
     return false;
   }
-  if (!API.isAdmin()) {
-    showToast('Administrator privileges are required to create articles.', 'error');
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 1000);
-    return false;
-  }
   return true;
 }
 
