@@ -17,14 +17,18 @@
       localStorage.setItem('__blog_api_url__', urlParam.replace(/\/+$/, ''));
     }
   }
-  // If running on Vercel, the backend API is co-located on the same origin via /api rewrites.
-  // Unless explicitly passed in the current query params, default to same-origin relative requests.
   const isVercel = typeof window !== 'undefined' && window.location && window.location.hostname.endsWith('vercel.app');
   let effectiveApiUrl = '';
   if (urlParam && urlParam !== 'clear' && urlParam !== 'reset') {
     effectiveApiUrl = urlParam.replace(/\/+$/, '');
   } else {
-    effectiveApiUrl = localStorage.getItem('__blog_api_url__') || '';
+    const stored = localStorage.getItem('__blog_api_url__') || '';
+    if (isVercel && (stored.includes('localhost') || stored.includes('127.0.0.1'))) {
+      localStorage.removeItem('__blog_api_url__');
+      effectiveApiUrl = '';
+    } else {
+      effectiveApiUrl = stored;
+    }
   }
-  window.__API_URL__ = window.__API_URL__ || window.VITE_API_URL || effectiveApiUrl || '';
+  window.__API_URL__ = window.__API_URL__ || window.VITE_API_URL || (isVercel && !urlParam ? '' : effectiveApiUrl) || '';
 })();
