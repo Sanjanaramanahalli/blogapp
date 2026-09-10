@@ -3,9 +3,10 @@
  * Manages HTTP communications, authentication state, theme toggling, and toasts.
  */
 
-const API_BASE = (typeof window !== 'undefined' && (window.__API_URL__ || window.VITE_API_URL || window.API_BASE_URL)) || '';
+var API_BASE = (typeof window !== 'undefined' && (window.__API_URL__ || window.VITE_API_URL || window.API_BASE_URL)) || '';
+if (typeof window !== 'undefined') window.API_BASE = API_BASE;
 
-const API = {
+var API = {
   getBaseUrl() {
     return API_BASE;
   },
@@ -146,6 +147,10 @@ const API = {
     window.location.href = '/';
   }
 };
+
+if (typeof window !== 'undefined') {
+  window.API = API;
+}
 
 // Toast Notifications System
 function showToast(message, type = 'success') {
