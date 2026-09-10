@@ -305,3 +305,65 @@
   line-height: 1.5;
 }
 
+/* ==========================================================================
+   Admin Responsive Styles (Mobile & Tablet)
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .admin-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .admin-actions .btn {
+    flex: 1;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-title-row h1 {
+    font-size: 1.75rem;
+  }
+
+  .admin-tabs {
+    gap: 0.25rem;
+  }
+
+  .admin-tab-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.825rem;
+  }
+
+  .admin-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-table th, .admin-table td {
+    padding: 0.65rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-card-value {
+    font-size: 1.5rem;
+  }
+}
+
+

@@ -1318,3 +1318,190 @@ textarea.form-control {
   text-transform: uppercase;
 }
 
+/* ==========================================================================
+   Comprehensive Responsive System (Mobile, Tablet, Desktop)
+   ========================================================================== */
+
+/* Large Tablets & Small Laptops (max-width: 1024px) */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 1.25rem;
+  }
+  
+  .blog-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .nav-container {
+    gap: 1rem;
+  }
+}
+
+/* Tablets (max-width: 768px) */
+@media (max-width: 768px) {
+  .nav-container {
+    height: auto;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .brand {
+    font-size: 1.2rem;
+  }
+
+  .nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+    gap: 0.75rem;
+    overflow-x: auto;
+  }
+
+  .nav-link {
+    font-size: 0.875rem;
+    padding: 0.35rem 0.6rem;
+  }
+
+  .edition-switcher {
+    order: 2;
+    margin-right: 0;
+  }
+
+  .nav-actions {
+    order: 2;
+    gap: 0.5rem;
+  }
+
+  .nav-actions .btn {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+  }
+
+  .hero {
+    padding: 2rem 0 1.5rem;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .search-input-wrapper {
+    width: 100%;
+  }
+
+  .sort-select {
+    width: 100%;
+  }
+
+  .blog-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .blog-card-media {
+    height: 190px;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .social-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .social-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .social-actions .btn-like {
+    flex: 1;
+    min-width: 90px;
+    justify-content: center;
+  }
+}
+
+/* Small Mobile Devices (max-width: 480px) */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .nav-container {
+    gap: 0.5rem;
+  }
+
+  .brand span {
+    display: inline;
+  }
+
+  .brand-icon {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+
+  .edition-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-tagline {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+  }
+
+  .filter-bar {
+    padding: 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .filter-pill, .tag-pill {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+  }
+
+  .card-content {
+    padding: 1.15rem;
+  }
+
+  .card-title {
+    font-size: 1.2rem;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .search-kbd {
+    display: none;
+  }
+}
+
+
