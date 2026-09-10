@@ -145,6 +145,9 @@ async function loadAdminBlogs() {
           <td style="font-size: 0.85rem; color: var(--text-muted);">${formatRelativeTime(b.created_at)}</td>
           <td style="text-align: right;">
             <div class="table-actions" style="justify-content: flex-end;">
+              <a href="/blog/${escapeHtml(b.slug)}" target="_blank" class="btn btn-outline btn-sm" title="View published article in new tab">
+                View ↗
+              </a>
               <button class="btn btn-outline btn-sm" onclick="toggleBlogStatus(${b.id})" title="Toggle draft/published">
                 ${isPublished ? 'Unpublish' : 'Publish'}
               </button>

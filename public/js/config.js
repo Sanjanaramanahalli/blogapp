@@ -23,7 +23,7 @@
   let effectiveApiUrl = '';
   if (urlParam && urlParam !== 'clear' && urlParam !== 'reset') {
     effectiveApiUrl = urlParam.replace(/\/+$/, '');
-  } else if (!isVercel) {
+  } else {
     effectiveApiUrl = localStorage.getItem('__blog_api_url__') || '';
   }
   window.__API_URL__ = window.__API_URL__ || window.VITE_API_URL || effectiveApiUrl || '';

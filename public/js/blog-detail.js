@@ -5,11 +5,16 @@
 
 let currentBlog = null;
 
-// Extract slug or ID from pathname /blog/:slug
+// Extract slug or ID from pathname /blog/:slug, /blog/:slug/, /blog?slug=, or /blog.html?slug=
 function getSlugFromPath() {
   const pathname = window.location.pathname;
+  // Match /blog/:slug or /blog/:slug/
+  const match = pathname.match(/^\/blog\/(.+?)(?:\/)?$/i);
+  if (match && match[1]) {
+    return decodeURIComponent(match[1]);
+  }
   const parts = pathname.split('/').filter(Boolean);
-  if (parts.length >= 2 && parts[0] === 'blog') {
+  if (parts.length >= 2 && parts[0].toLowerCase() === 'blog') {
     return decodeURIComponent(parts[1]);
   }
   const urlParams = new URLSearchParams(window.location.search);
@@ -95,7 +100,7 @@ async function loadBlogDetail() {
           <h1 class="article-title">${escapeHtml(currentBlog.title)}</h1>
           <div class="article-author-row">
             <div class="user-avatar" style="width: 2.75rem; height: 2.75rem; font-size: 1rem;">
-              ${escapeHtml(currentBlog.author_name.substring(0, 2).toUpperCase())}
+              ${escapeHtml((currentBlog.author_name || 'TT').trim().substring(0, 2).toUpperCase())}
             </div>
             <div class="article-author-info">
               <div class="article-author-name">${escapeHtml(currentBlog.author_name)}</div>
@@ -202,7 +207,10 @@ async function loadBlogDetail() {
             <p class="empty-text" style="max-width: 520px; margin: 0 auto 1.5rem; color: var(--text-secondary);">
               ${escapeHtml(err.message || 'The article could not be loaded.')}
             </p>
-            <a href="/" class="btn btn-primary btn-sm">Return to Articles</a>
+            <div style="display: flex; gap: 0.75rem; justify-content: center;">
+              <button onclick="loadBlogDetail()" class="btn btn-primary btn-sm">⚡ Retry Loading</button>
+              <a href="/" class="btn btn-secondary btn-sm">Return to Articles</a>
+            </div>
           </div>
         `;
       }

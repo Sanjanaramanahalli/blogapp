@@ -240,9 +240,17 @@ function getBlogBySlugOrId(req, res) {
       ? `SELECT b.*, u.name as author_name, u.email as author_email
          FROM blogs b JOIN users u ON b.author_id = u.id WHERE b.id = ?`
       : `SELECT b.*, u.name as author_name, u.email as author_email
-         FROM blogs b JOIN users u ON b.author_id = u.id WHERE b.slug = ?`;
+         FROM blogs b JOIN users u ON b.author_id = u.id WHERE LOWER(b.slug) = LOWER(?)`;
 
-    const blog = db.prepare(query).get(slugOrId);
+    let blog = db.prepare(query).get(slugOrId);
+
+    // Fallback: if slug lookup failed, check if slug matches ID or vice-versa
+    if (!blog && !isNumeric) {
+      blog = db.prepare(`
+        SELECT b.*, u.name as author_name, u.email as author_email
+        FROM blogs b JOIN users u ON b.author_id = u.id WHERE b.id = ?
+      `).get(slugOrId);
+    }
 
     if (!blog) {
       return res.status(404).json({ error: 'Blog post not found.' });

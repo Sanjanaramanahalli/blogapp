@@ -366,14 +366,16 @@ async function loadBlogs() {
         : '';
 
       return `
-        <article class="blog-card" id="blog-${blog.id}">
+        <article class="blog-card" id="blog-${blog.id}" data-slug="${escapeHtml(blog.slug)}" style="cursor: pointer;">
           <div class="blog-card-media" style="position: relative;">
-            <img src="${escapeHtml(cover)}" alt="${escapeHtml(blog.title)}" class="blog-card-img" loading="lazy">
-            ${blog.video_url ? `
-              <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); pointer-events: none;">
-                <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(239, 68, 68, 0.9); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">▶</div>
-              </div>
-            ` : ''}
+            <a href="/blog/${escapeHtml(blog.slug)}" style="display: block; width: 100%; height: 100%; text-decoration: none;">
+              <img src="${escapeHtml(cover)}" alt="${escapeHtml(blog.title)}" class="blog-card-img" loading="lazy">
+              ${blog.video_url ? `
+                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); pointer-events: none;">
+                  <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(239, 68, 68, 0.9); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">▶</div>
+                </div>
+              ` : ''}
+            </a>
           </div>
           <div class="blog-card-content">
             <div class="blog-card-meta">
@@ -389,18 +391,25 @@ async function loadBlogs() {
               <a href="/blog/${escapeHtml(blog.slug)}">${escapeHtml(blog.title)}</a>
             </h2>
             <div class="blog-card-snippet">
-              ${escapeHtml((blog.body || '').replace(/<[^>]*>/g, ''))}
+              <a href="/blog/${escapeHtml(blog.slug)}" style="color: inherit; text-decoration: none;">
+                ${escapeHtml((blog.body || '').replace(/<[^>]*>/g, ''))}
+              </a>
             </div>
             ${tagsHtml}
-            <div class="blog-card-footer">
+            <div class="blog-card-footer" style="flex-wrap: wrap; gap: 0.5rem;">
               <div style="font-weight: 500;">By ${escapeHtml(blog.author_name)}</div>
-              <div class="card-stats">
-                <span class="stat-item ${blog.user_liked ? 'liked' : ''}" title="Likes">
-                  ❤️ <strong>${blog.like_count}</strong>
-                </span>
-                <span class="stat-item" title="Comments">
-                  💬 <strong>${blog.comment_count}</strong>
-                </span>
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <a href="/blog/${escapeHtml(blog.slug)}" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.55rem; color: var(--accent-light); border-color: var(--accent);">
+                  Read Article →
+                </a>
+                <div class="card-stats">
+                  <span class="stat-item ${blog.user_liked ? 'liked' : ''}" title="Likes">
+                    ❤️ <strong>${blog.like_count}</strong>
+                  </span>
+                  <span class="stat-item" title="Comments">
+                    💬 <strong>${blog.comment_count}</strong>
+                  </span>
+                </div>
               </div>
             </div>
             ${API.isAdmin() ? `
@@ -415,6 +424,20 @@ async function loadBlogs() {
         </article>
       `;
     }).join('');
+
+    // Attach card click handlers (smooth navigation to article)
+    grid.querySelectorAll('.blog-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        // Prevent navigating if clicking an interactive sub-element (buttons, tags, admin delete)
+        if (e.target.closest('button') || e.target.closest('.card-tag-badge') || e.target.closest('a')) {
+          return;
+        }
+        const slug = card.getAttribute('data-slug');
+        if (slug) {
+          window.location.href = `/blog/${slug}`;
+        }
+      });
+    });
 
     // Attach click listeners to card tag badges
     grid.querySelectorAll('.card-tag-badge').forEach(badge => {

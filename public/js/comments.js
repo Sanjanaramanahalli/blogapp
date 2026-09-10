@@ -95,12 +95,11 @@ function renderCommentNode(comment, depth = 0) {
   const isAdmin = currentUser && currentUser.role === 'admin';
   const isEdited = comment.updated_at && comment.updated_at !== comment.created_at;
 
-  const initials = comment.user_name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase();
+  const rawName = (comment.user_name || 'Anonymous Reader').trim();
+  const nameParts = rawName.split(/\s+/).filter(Boolean);
+  const initials = nameParts.length >= 2 
+    ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+    : rawName.substring(0, 2).toUpperCase();
 
   const repliesHtml = comment.replies && comment.replies.length > 0
     ? `<div class="replies-container">

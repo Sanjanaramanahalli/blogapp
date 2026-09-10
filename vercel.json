@@ -14,8 +14,32 @@
       "destination": "/public/login.html"
     },
     {
+      "source": "/signin",
+      "destination": "/public/login.html"
+    },
+    {
+      "source": "/sign-in",
+      "destination": "/public/login.html"
+    },
+    {
       "source": "/register",
       "destination": "/public/register.html"
+    },
+    {
+      "source": "/signup",
+      "destination": "/public/register.html"
+    },
+    {
+      "source": "/sign-up",
+      "destination": "/public/register.html"
+    },
+    {
+      "source": "/google-auth",
+      "destination": "/public/google-auth.html"
+    },
+    {
+      "source": "/social-auth",
+      "destination": "/public/social-auth.html"
     },
     {
       "source": "/profile",
@@ -34,7 +58,15 @@
       "destination": "/public/presentation.html"
     },
     {
-      "source": "/blog/:slug",
+      "source": "/blog/:slug*",
+      "destination": "/public/blog.html"
+    },
+    {
+      "source": "/blog/(.*)",
+      "destination": "/public/blog.html"
+    },
+    {
+      "source": "/blog",
       "destination": "/public/blog.html"
     },
     {
