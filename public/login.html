@@ -564,7 +564,10 @@
           }, 400);
 
         } catch (err) {
-          const errMsg = err.message || 'Invalid email or password.';
+          let errMsg = err.message || 'Invalid email or password.';
+          if (errMsg.includes('Failed to fetch') || errMsg.includes('504')) {
+            errMsg = 'Unable to connect to backend server. If using Render free tier, it may be waking up (please wait 30 seconds and retry).';
+          }
           if (loginErrorAlert) {
             loginErrorAlert.textContent = errMsg;
             loginErrorAlert.style.display = 'block';

@@ -1,9 +1,8 @@
 const bcrypt = require('bcryptjs');
-const { db, initSchema } = require('./database');
 
-function seedDatabase() {
-  console.log('--- Initializing database schema ---');
-  initSchema();
+function seedDatabase(passedDb) {
+  const databaseModule = require('./database');
+  const db = passedDb || databaseModule.db;
 
   console.log('--- Seeding default records ---');
 

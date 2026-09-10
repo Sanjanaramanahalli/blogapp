@@ -187,7 +187,7 @@ function initSchema() {
     if (Number(count) === 0) {
       console.log('🌱 Database has 0 blogs. Auto-seeding initial articles...');
       const { seedDatabase } = require('./seed');
-      seedDatabase();
+      seedDatabase(db);
     }
   } catch (seedErr) {
     console.warn('Auto-seed check note:', seedErr.message);

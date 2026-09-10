@@ -8,4 +8,11 @@
  * If left empty '', the frontend makes relative requests to the same origin
  * or uses Vercel rewrites in vercel.json.
  */
-window.__API_URL__ = window.__API_URL__ || window.VITE_API_URL || '';
+(function() {
+  const urlParam = new URLSearchParams(window.location.search).get('apiUrl');
+  if (urlParam) {
+    localStorage.setItem('__blog_api_url__', urlParam.replace(/\/+$/, ''));
+  }
+  const storedApiUrl = localStorage.getItem('__blog_api_url__') || '';
+  window.__API_URL__ = window.__API_URL__ || window.VITE_API_URL || storedApiUrl || '';
+})();

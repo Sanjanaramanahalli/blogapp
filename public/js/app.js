@@ -440,11 +440,18 @@ async function loadBlogs() {
     renderPagination(pagination);
   } catch (err) {
     console.error('Error loading blogs:', err);
+    const isColdStart = err.message && (err.message.includes('504') || err.message.includes('Failed to fetch'));
+    const helperNote = isColdStart 
+      ? 'If your backend is hosted on Render free tier, it may be waking up from sleep mode (takes ~30-45 seconds).'
+      : 'Could not reach the backend server. Please verify your backend deployment or database connection.';
     grid.innerHTML = `
       <div class="empty-state" style="grid-column: 1 / -1; border-color: var(--danger);">
         <h2 class="empty-title" style="color: var(--danger-light);">Failed to Load Articles</h2>
-        <p class="empty-text">An error occurred while communicating with the server. Please try again.</p>
-        <button onclick="loadBlogs()" class="btn btn-secondary btn-sm">Retry</button>
+        <p class="empty-text">${escapeHtml(helperNote)}</p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1rem;">
+          <button onclick="loadBlogs()" class="btn btn-primary btn-sm">⚡ Retry Loading</button>
+          <a href="/login" class="btn btn-secondary btn-sm">Go to Sign In</a>
+        </div>
       </div>
     `;
   }
