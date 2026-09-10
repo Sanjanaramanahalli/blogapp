@@ -108,6 +108,13 @@ const API = {
 
   async checkAuth() {
     this.extractTokenFromUrl();
+    const token = this.getToken();
+    if (!token) {
+      this.setUser(null);
+      if (typeof updateNavbarAuth === 'function') updateNavbarAuth();
+      return null;
+    }
+
     try {
       const res = await this.request('/api/auth/me');
       if (res && res.user) {
@@ -115,12 +122,16 @@ const API = {
         if (typeof updateNavbarAuth === 'function') updateNavbarAuth();
         return res.user;
       }
-    } catch {
-      // Not authenticated or expired
+    } catch (err) {
+      // Only clear credentials if server explicitly returned 401 / 403 unauthorized
+      if (err.status === 401 || err.status === 403) {
+        this.setToken(null);
+        this.setUser(null);
+        if (typeof updateNavbarAuth === 'function') updateNavbarAuth();
+      }
+      // On network errors or offline, retain existing user state if available
+      return this.getUser();
     }
-    this.setToken(null);
-    this.setUser(null);
-    if (typeof updateNavbarAuth === 'function') updateNavbarAuth();
     return null;
   },
 

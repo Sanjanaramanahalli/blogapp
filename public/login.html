@@ -575,6 +575,25 @@
         }
       });
 
+      // Demo Quick Login buttons
+      document.getElementById('btn-fill-admin')?.addEventListener('click', () => {
+        const emailInput = document.getElementById('login-email');
+        const passInput = document.getElementById('login-password');
+        if (emailInput) emailInput.value = 'admin@blog.com';
+        if (passInput) passInput.value = 'Admin@123456';
+        if (loginErrorAlert) loginErrorAlert.style.display = 'none';
+        if (typeof showToast === 'function') showToast('Admin credentials filled. Click "Sign In" or press Enter.');
+      });
+
+      document.getElementById('btn-fill-reader')?.addEventListener('click', () => {
+        const emailInput = document.getElementById('login-email');
+        const passInput = document.getElementById('login-password');
+        if (emailInput) emailInput.value = 'john@reader.com';
+        if (passInput) passInput.value = 'Reader@123';
+        if (loginErrorAlert) loginErrorAlert.style.display = 'none';
+        if (typeof showToast === 'function') showToast('Reader credentials filled. Click "Sign In" or press Enter.');
+      });
+
       // Social Login button click handlers
       document.getElementById('btn-google-login')?.addEventListener('click', () => {
         window.location.href = '/auth/google';
