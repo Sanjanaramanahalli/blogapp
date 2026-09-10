@@ -10,72 +10,68 @@
       "destination": "/api/index.js"
     },
     {
+      "source": "/uploads/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
       "source": "/login",
-      "destination": "/public/login.html"
+      "destination": "/login.html"
     },
     {
       "source": "/signin",
-      "destination": "/public/login.html"
+      "destination": "/login.html"
     },
     {
       "source": "/sign-in",
-      "destination": "/public/login.html"
+      "destination": "/login.html"
     },
     {
       "source": "/register",
-      "destination": "/public/register.html"
+      "destination": "/register.html"
     },
     {
       "source": "/signup",
-      "destination": "/public/register.html"
+      "destination": "/register.html"
     },
     {
       "source": "/sign-up",
-      "destination": "/public/register.html"
+      "destination": "/register.html"
     },
     {
       "source": "/google-auth",
-      "destination": "/public/google-auth.html"
+      "destination": "/google-auth.html"
     },
     {
       "source": "/social-auth",
-      "destination": "/public/social-auth.html"
+      "destination": "/social-auth.html"
     },
     {
       "source": "/profile",
-      "destination": "/public/profile.html"
+      "destination": "/profile.html"
     },
     {
       "source": "/admin",
-      "destination": "/public/admin.html"
+      "destination": "/admin.html"
     },
     {
       "source": "/write",
-      "destination": "/public/write.html"
+      "destination": "/write.html"
     },
     {
       "source": "/presentation",
-      "destination": "/public/presentation.html"
+      "destination": "/presentation.html"
     },
     {
       "source": "/blog/:slug*",
-      "destination": "/public/blog.html"
+      "destination": "/blog.html"
     },
     {
       "source": "/blog/(.*)",
-      "destination": "/public/blog.html"
+      "destination": "/blog.html"
     },
     {
       "source": "/blog",
-      "destination": "/public/blog.html"
-    },
-    {
-      "source": "/",
-      "destination": "/public/index.html"
-    },
-    {
-      "source": "/:path*",
-      "destination": "/public/:path*"
+      "destination": "/blog.html"
     }
   ]
 }

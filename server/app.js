@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('node:path');
+const fs = require('node:fs');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
@@ -51,6 +52,31 @@ app.use(authenticate);
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 app.use(express.static(PUBLIC_DIR));
 app.use('/uploads', express.static(path.join(PUBLIC_DIR, 'uploads')));
+
+// Dynamic handler for uploaded media (serves from public/uploads, /tmp/uploads, or SQLite database)
+app.get('/uploads/:filename', (req, res) => {
+  const filename = path.basename(req.params.filename);
+  const localFile = path.join(PUBLIC_DIR, 'uploads', filename);
+  if (fs.existsSync(localFile)) {
+    return res.sendFile(localFile);
+  }
+  const tmpFile = path.join('/tmp', 'uploads', filename);
+  if (fs.existsSync(tmpFile)) {
+    return res.sendFile(tmpFile);
+  }
+  try {
+    const { db } = require('./db/database');
+    const row = db.prepare('SELECT mimetype, data FROM uploaded_files WHERE filename = ?').get(filename);
+    if (row && row.data) {
+      res.setHeader('Content-Type', row.mimetype || 'image/jpeg');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.send(Buffer.from(row.data));
+    }
+  } catch (err) {
+    console.warn('Error reading uploaded file from db:', err.message);
+  }
+  res.status(404).send('Image not found.');
+});
 
 // Mount API routes
 app.use('/api/auth', authRoutes);

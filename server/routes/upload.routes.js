@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const path = require('node:path');
 const upload = require('../middleware/upload');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
@@ -30,6 +31,15 @@ function handleUpload(req, res) {
 
     if (!uploadedFile) {
       return res.status(400).json({ error: 'No image file provided.' });
+    }
+
+    if (!uploadedFile.filename) {
+      const ext = path.extname(uploadedFile.originalname || '').toLowerCase() || '.jpg';
+      const sanitizedBase = path.basename(uploadedFile.originalname || 'cover', ext)
+        .replace(/[^a-zA-Z0-9_-]/g, '')
+        .substring(0, 30);
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      uploadedFile.filename = `${sanitizedBase || 'cover'}-${uniqueSuffix}${ext}`;
     }
 
     try {

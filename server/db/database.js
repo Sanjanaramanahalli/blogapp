@@ -176,6 +176,18 @@ function initSchema() {
       CREATE INDEX IF NOT EXISTS idx_saved_blogs_user_id ON saved_blogs(user_id);
       CREATE INDEX IF NOT EXISTS idx_saved_blogs_blog_id ON saved_blogs(blog_id);
     `);
+
+    // Ensure uploaded_files table exists for persistent serverless uploads
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS uploaded_files (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT UNIQUE NOT NULL,
+        mimetype TEXT NOT NULL,
+        data BLOB NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_uploaded_files_filename ON uploaded_files(filename);
+    `);
   } catch (err) {
     console.error('Migration error:', err);
   }
