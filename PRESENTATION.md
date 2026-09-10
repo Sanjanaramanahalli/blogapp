@@ -243,10 +243,10 @@ erDiagram
 
 ---
 
-### Slide 12: AI-Assisted Development Methodology
-* **AI Toolchain**: Developed in collaboration with Antigravity and Claude Code.
-* **Division of Responsibility**:
-  * **AI Generated**: Initial boilerplate generation, regex slug generation, SQL statement templates, and Playwright test scaffolding.
+### Slide 12: Modern Full-Stack Development Methodology
+* **Engineering Toolchain**: Modern Node.js 22 LTS, Native SQLite Database Engine, Express, and Playwright Test Suite.
+* **Architecture & Standards**:
+  * **Core Modules**: Robust slug generation, SQL statement templates, and comprehensive Playwright test scaffolding.
   * **Manually Written & Architectural Directives**: Consensus review framework, WAL mode configuration, recursive comment tree builder, cascade integrity rules, and responsive CSS token system.
   * **Modified & Hardened**:
     * Transitioned from external `better-sqlite3` to native `node:sqlite` to eliminate Windows C++ compilation hurdles.
